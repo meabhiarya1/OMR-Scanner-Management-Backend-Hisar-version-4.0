@@ -1,0 +1,34 @@
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+
+const createUser = async (req, res) => {
+  const { userName, mobile,role, email, password, permissions } = req.body;
+  console.log(req.body);
+  if (!userName || !mobile || !email || !password || !permissions || !role) {
+    return res.status(422).json({ error: "Please fill all fields properly" });
+  }
+
+  const parsedPermissions =
+    typeof permissions === "string" ? JSON.parse(permissions) : permissions;
+
+  try {
+    const userExist = await User.findOne({ where: { email: email } });
+    if (userExist) {
+      return res.status(422).json({ error: "Email already exists" });
+    } else {
+      const hashedPassword = await bcrypt.hash(password, 12); // Hash the password
+      const newUser = await User.create({
+        userName,
+        mobile,
+        email,
+        password: hashedPassword, // Set the hashed password
+        role,
+        permissions: parsedPermissions,
+      });
+      res.status(201).json({ message: "User created successfully", newUser });
+    }
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+module.exports = createUser;
