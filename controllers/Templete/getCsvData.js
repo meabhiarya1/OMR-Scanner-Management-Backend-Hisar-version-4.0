@@ -4,7 +4,7 @@ const path = require("path");
 const Files = require("../../models/TempleteModel/files");
 
 const getCsvData = async (req, res, next) => {
-  console.log(req.params.id)
+  console.log(req.params.id) /* fileId required */
   try {
     if (!req.params.id) {
       return res.status(400).json({ error: "File not provided" });

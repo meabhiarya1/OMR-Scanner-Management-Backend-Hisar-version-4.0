@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get("/get/templetes", getTemplete);
 router.get("/get/templetedata/:id", getTempleteData); //templeteId
-router.get("/get/headerdata/:id", getHeaderData); //templeteId
+router.get("/get/headerdata/:id", getHeaderData); //fileId
 router.get("/get/csvdata/:id", getCsvData); // fileId
 
 router.post("/get/image", getImage);
