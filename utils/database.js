@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 
-const sequelize = new Sequelize("omrusermanagement", "root", "root", {
+const sequelize = new Sequelize("omrusermanagement", "root", "12345678", {
   dialect: "mysql",
   host: "localhost",
 });
