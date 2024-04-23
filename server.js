@@ -1,18 +1,33 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const db = require("./utils/database");
-// const bodyParser = require("body-parser");
+const sequelize = require("./utils/database");
+const bodyParser = require("body-parser");
+const templeteRoutes = require("./routes/templete");
 const userRoutes = require('./routes/Omr');
-const compareCsv = require("./routes/compareCsv")
-const PORT = 5000;
+const compareCsv = require("./routes/compareCsv");
+const Templete = require("./models/TempleteModel/templete");
+const MetaData = require("./models/TempleteModel/metadata");
+const Files = require("./models/TempleteModel/files");
+const PORT = 4000;
+
+//middlewares
 app.use(cors())
-
 app.use(express.json());
+app.use(bodyParser.json({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
+//all routes
 app.use("/users", userRoutes);
-app.use(compareCsv)
-db
+app.use(compareCsv);
+app.use(templeteRoutes);
+
+Templete.hasMany(MetaData);
+MetaData.belongsTo(Templete);
+Templete.hasMany(Files);
+Files.belongsTo(Templete);
+
+sequelize
   .sync({ force: false })
   .then(() => {
     console.log("Database is connected");
