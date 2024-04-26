@@ -26,6 +26,7 @@ const getHeaderData = (req, res, next) => {
             .json({ error: "No content found in excel sheet" });
         }
         // console.log(data[0])
+        console.log(Object.keys(data[0]));
         res.status(200).json(Object.keys(data[0]));
       } else {
         res.status(404).json({ error: "File not found on given filepath" });
