@@ -14,7 +14,7 @@ router.post('/createuser',  createUser );
 router.get('/getallusers', allUser);
 
 // get single user 
-router.get('/getuser/:id', singleUser );
+router.post('/getuser', singleUser );
 
 // updated user
 router.put('/updateuser/:id', updatedUser);
