@@ -8,6 +8,7 @@ const { generateCsv } = require("../controllers/resultGeneration/generateCsv");
 const upload = multer();
 const router = express.Router();
 
+//csv and zip upload routers
 router.post("/upload/key", upload.single("keyFile"), uploadKey);
 router.post("/upload/data", upload.single("dataFile"), uploadData);
 router.post("/generate/csv", generateCsv);

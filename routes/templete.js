@@ -7,7 +7,8 @@ const getHeaderData = require("../controllers/Templete/getHeaderData");
 const handleData = require("../controllers/Templete/handleData");
 const getCsvData = require("../controllers/Templete/getCsvData");
 const getImage = require("../controllers/Templete/getImage");
-const updateCsvData = require("../controllers/Templete/updateCsvData")
+const updateCsvData = require("../controllers/Templete/updateCsvData");
+const assignUser = require("../controllers/Templete/assignUser");
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.post("/add/templete", addTemplete);
 router.post("/upload/:id", handleUpload); //templeteId
 router.post("/data", handleData);
 router.post("/updatecsvdata/:id", updateCsvData); // fileId
+router.post("/assign/user", assignUser);
 
 module.exports = router;

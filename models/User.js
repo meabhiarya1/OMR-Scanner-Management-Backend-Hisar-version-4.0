@@ -30,8 +30,18 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  max: {
+    type: DataTypes.STRING,
+    defaultValue: 0,
+  },
+  min: {
+    type: DataTypes.STRING,
+    defaultValue: 0,
+  },
+  fileId: {
+    type: DataTypes.STRING,
+    defaultValue: 0,
+  },
 });
-
-
 
 module.exports = User;

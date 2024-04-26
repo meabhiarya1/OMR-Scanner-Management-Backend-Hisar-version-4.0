@@ -26,17 +26,20 @@ app.use(templeteRoutes);
 Templete.hasMany(MetaData);
 MetaData.belongsTo(Templete);
 Templete.hasMany(Files);
-
 Files.belongsTo(Templete);
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-// sequelize
-//   .sync({ force: false })
-//   .then(() => {
-//     console.log("Database is connected");
 
-//   })
-//   .catch((err) => {
-//     console.error("Unable to connect to the database:", err);
-//   });
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+
+sequelize
+  .sync({ force: false })
+  .then(() => {
+    // console.log("Database is connected");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Unable to connect to the database:", err);
+  });
