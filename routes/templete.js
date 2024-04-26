@@ -9,6 +9,8 @@ const getCsvData = require("../controllers/Templete/getCsvData");
 const getImage = require("../controllers/Templete/getImage");
 const updateCsvData = require("../controllers/Templete/updateCsvData");
 const assignUser = require("../controllers/Templete/assignUser");
+const getAllTask = require("../controllers/Templete/getAllTask");
+const getTask = require("../controllers/Templete/getTask")
 
 const router = express.Router();
 
@@ -16,6 +18,8 @@ router.get("/get/templetes", getTemplete);
 router.get("/get/templetedata/:id", getTempleteData); //templeteId
 router.get("/get/headerdata/:id", getHeaderData); //fileId
 router.get("/get/csvdata/:id", getCsvData); // fileId
+router.get("/get/alltasks", getAllTask); //admin
+router.get("/get/task/:id", getTask); //user
 
 router.post("/get/image", getImage);
 router.post("/add/templete", addTemplete);

@@ -4,12 +4,12 @@ const Sequelize = require("sequelize");
 const sequelize = require("../../utils/database");
 
 const MetaData = sequelize.define("templetedata", {
-  id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
-    primaryKey: true,
-  },
+  // id: {
+  //   type: Sequelize.INTEGER,
+  //   autoIncrement: true,
+  //   allowNull: false,
+  //   primaryKey: true,
+  // },
   attribute: {
     type: Sequelize.STRING,
     allowNull: false,
