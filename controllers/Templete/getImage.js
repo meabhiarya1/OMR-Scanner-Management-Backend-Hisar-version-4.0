@@ -4,7 +4,7 @@ const path = require("path");
 const getImage = async (req, res, next) => {
   try {
     const { imageName } = req.body;
-    console.log(imageName)
+    console.log(">>>>>>>>>>>>>>>>",imageName)
 
     if (!imageName) {
       return res.status(400).json({ error: "ImageName is Missing" });
