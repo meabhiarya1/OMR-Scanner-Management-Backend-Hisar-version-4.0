@@ -29,13 +29,17 @@ const getCsvData = async (req, res, next) => {
       defval: "BLANK",
     });
 
-    const { min, max } = req.body;
+    let { min, max } = req.body;
+
+    console.log(min, max);
+    min = parseInt(min)
+    max = parseInt(max)
 
     if (min < 0 || min >= data.length || max < 0 || max >= data.length) {
       return res.status(400).json({ error: "Invalid min or max value" });
     }
 
-    if (max <= min) {
+    if (max < min) {
       return res.status(400).json({ error: "Max must be greater than min" });
     }
 
