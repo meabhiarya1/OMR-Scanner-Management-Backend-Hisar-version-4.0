@@ -17,10 +17,10 @@ const router = express.Router();
 router.get("/get/templetes", getTemplete);
 router.get("/get/templetedata/:id", getTempleteData); //templeteId
 router.get("/get/headerdata/:id", getHeaderData); //fileId
-router.get("/get/csvdata/:id", getCsvData); // fileId
 router.get("/get/alltasks", getAllTask); //admin
 router.get("/get/task/:id", getTask); //user
 
+router.post("/get/csvdata", getCsvData);
 router.post("/get/image", getImage);
 router.post("/add/templete", addTemplete);
 router.post("/upload/:id", handleUpload); //templeteId

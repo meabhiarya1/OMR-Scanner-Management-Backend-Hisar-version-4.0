@@ -3,11 +3,10 @@ const path = require("path");
 
 const getImage = async (req, res, next) => {
   try {
-    const { imageName, id } = req.body;
-    // console.log(imageName)
-    // return
+    const { imageName} = req.body;
+    // console.log(imageName.length, id)
 
-    if (!imageName || !id) {
+    if (!imageName) {
       return res.status(400).json({ error: "Id or ImageName is Missing" });
     }
 
@@ -23,6 +22,8 @@ const getImage = async (req, res, next) => {
       .access(sourceFilePath)
       .then(() => true)
       .catch(() => false);
+
+      console.log(sourceFilePath)
 
     if (!sourceFileExists) {
       return res.status(404).json({ error: "File not found" });
