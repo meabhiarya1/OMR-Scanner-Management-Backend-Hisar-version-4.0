@@ -1,6 +1,11 @@
 const User = require("../models/User");
 
 const getUsers = async (req, res) => {
+  const userRole = req.role;
+  // console.log(req)
+  if(userRole !== "Admin"){
+    return res.status(500).json({msg: "Only Admin can create user"});
+  }
   try {
     const selectedAttributes = [
       "id",

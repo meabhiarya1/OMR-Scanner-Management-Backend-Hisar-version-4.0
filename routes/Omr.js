@@ -7,20 +7,21 @@ const singleUser = require("../controllers/singleUser")
 const updatedUser = require("../controllers//UpdateUser")
 const deleteUser = require("../controllers/DeleteUser")
 const logIn = require("../controllers/Login")
+const authMiddleware = require("../middleware/authMiddleware")
 // Create a new user
-router.post('/createuser',  createUser );
+router.post('/createuser', authMiddleware, createUser );
 
 // Get all users
-router.get('/getallusers', allUser);
+router.post('/getallusers',authMiddleware, allUser);
 
 // get single user 
 router.post('/getuser', singleUser );
 
 // updated user
-router.put('/updateuser/:id', updatedUser);
+router.post('/updateuser/:id', authMiddleware,  updatedUser);
 
 // delete user
-router.delete('/deleteuser/:id' , deleteUser)
+router.post('/deleteuser/:id' , authMiddleware, deleteUser)
 
 // login user
 router.post('/login', logIn)

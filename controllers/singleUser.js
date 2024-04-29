@@ -21,7 +21,7 @@ const getSingleUser = async (req, res) => {
     }
     const user = await User.findOne(
       {
-        where : {id: decoded.userId},
+        where : {id: decoded.userId },
         attributes: selectedAttributes
     },
       

@@ -2,6 +2,10 @@ const User = require('../models/User');
 
 const deleteUser = async (req, res) => {
   const { id } = req.params;
+  const userRole = req.role;
+  if(userRole !== "Admin"){
+    return res.status(500).json({msg: "Only Admin can create user"});
+  }
   console.log(id,"id")
 
   try {

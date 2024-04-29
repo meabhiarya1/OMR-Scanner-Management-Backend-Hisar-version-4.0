@@ -2,6 +2,11 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const getImage = async (req, res, next) => {
+  const userPermission = req.permissions
+  
+  if(userPermission.dataEntry !== true){
+    return res.status(500).json({message: "user not authorised"})
+  }
   try {
     const { imageName } = req.body;
     console.log(">>>>>>>>>>>>>>>>",imageName)
@@ -18,7 +23,7 @@ const getImage = async (req, res, next) => {
       imageName
     );
 
-    console.log(sourceFilePath);
+    console.log(sourceFilePath,"<<<<<<<<<<<<<<<<<<");
 
     const sourceFileExists = await fs
       .access(sourceFilePath)

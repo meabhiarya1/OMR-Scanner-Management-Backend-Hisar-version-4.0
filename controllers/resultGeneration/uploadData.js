@@ -8,7 +8,8 @@ const router = express.Router();
 
 
 exports.uploadData = (req, res, next) => {
-  //   console.log(req.file);
+
+    console.log(req.body);
 
   // Initialize an empty array to store headers and data
   const data = [];
