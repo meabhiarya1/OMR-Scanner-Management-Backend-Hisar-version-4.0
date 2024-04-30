@@ -15,7 +15,7 @@ router.post('/createuser', authMiddleware, createUser );
 router.post('/getallusers',authMiddleware, allUser);
 
 // get single user 
-router.post('/getuser', singleUser );
+router.post('/getuser',authMiddleware ,singleUser );
 
 // updated user
 router.post('/updateuser/:id', authMiddleware,  updatedUser);

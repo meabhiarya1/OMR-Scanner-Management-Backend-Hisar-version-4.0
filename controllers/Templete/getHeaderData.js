@@ -4,7 +4,16 @@ const fs = require("fs");
 const path = require("path");
 
 const getHeaderData = (req, res, next) => {
+
+  const userRole=req.role
+  if (userRole!="Admin") {
+    return res
+      .status(500)
+      .json({ message: "you dont have access for performing this action" });
+  }
+
   console.log(req.params.id); /* want fileid in params */
+
   try {
     Files.findOne({ where: { id: req.params.id } }).then((fileData) => {
       console.log(fileData);

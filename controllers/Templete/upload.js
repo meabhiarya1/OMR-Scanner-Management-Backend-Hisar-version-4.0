@@ -133,6 +133,13 @@ const uploadPromise = (req, res, next, id, imageColName) => {
 };
 
 const handleUpload = async (req, res, next) => {
+  const userRole=req.role
+  console.log(userRole,"-----------")
+  if (userRole!="Admin") {
+    return res
+      .status(500)
+      .json({ message: "you dont have access for performing this action" });
+  }
   try {
     await uploadPromise(req, res, next, req.params.id, req.query.imageColName);
     console.log("Files Uploaded successfully");

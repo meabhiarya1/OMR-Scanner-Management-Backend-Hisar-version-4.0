@@ -30,7 +30,7 @@ const getImage = async (req, res, next) => {
       .then(() => true)
       .catch(() => false);
 
-    console.log(sourceFilePath);
+  
 
     if (!sourceFileExists) {
       return res.status(404).json({ error: "File not found" });

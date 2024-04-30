@@ -15,18 +15,18 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/get/templetes", getTemplete);
 router.get("/get/templetedata/:id", getTempleteData); //templeteId
-router.get("/get/headerdata/:id", getHeaderData); //fileId
-router.get("/get/alltasks", getAllTask); //admin
-router.get("/get/task/:id", getTask); //user
+router.get("/get/headerdata/:id",authMiddleware ,getHeaderData); //fileId
+router.get("/get/alltasks",authMiddleware, getAllTask); //admin
+router.get("/get/task/:id",authMiddleware, getTask); //user
 
+router.post("/get/templetes",authMiddleware, getTemplete);
 router.post("/get/csvdata",authMiddleware, getCsvData);
 router.post("/get/image",authMiddleware, getImage);
 router.post("/add/templete",authMiddleware, addTemplete);
-router.post("/upload/:id", handleUpload); //templeteId
-router.post("/data", handleData);
-router.post("/updatecsvdata/:id", updateCsvData); // fileId
-router.post("/assign/user", assignUser);
+router.post("/upload/:id",authMiddleware, handleUpload); //templeteId
+router.post("/data",authMiddleware, handleData);
+router.post("/updatecsvdata/:id",authMiddleware, updateCsvData); // fileId
+router.post("/assign/user",authMiddleware, assignUser);
 
 module.exports = router;

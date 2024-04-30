@@ -3,17 +3,15 @@ const User = require("../models/User");
 const secretKey = "omrscanner";
 
 const authMiddleware = async (req, res, next) => {
-  const { token } = req.body;
-  console.log(req.body.token, "--token");
+  const { token } = req.headers;
+
+  // console.log(req.body, "--token",req.files);
+  // console.log(token,"token")
   if (!token) {
     return res.status(500).json({ message: "Token Not Exist" });
   }
   try {
     const decoded = jwt.verify(token, secretKey);
-    console.log("decoded");
-    // const admin = decoded.role === "Admin";
-    // const moderator = decoded.role === "Moderator";
-    // const operator = decoded.role === "Operator";
     const user = await User.findOne({
       where: { id: decoded.userId, email: decoded.email, role: decoded.role },
     });
