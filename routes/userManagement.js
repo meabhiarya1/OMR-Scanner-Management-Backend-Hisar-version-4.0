@@ -1,12 +1,12 @@
 // routes/users.js
 const express = require('express');
 const router = express.Router();
-const createUser = require("../controllers/CreateUser")
-const allUser = require("../controllers/Alluser")
-const singleUser = require("../controllers/singleUser")
-const updatedUser = require("../controllers//UpdateUser")
-const deleteUser = require("../controllers/DeleteUser")
-const logIn = require("../controllers/Login")
+const createUser = require("../controllers/userManagement/CreateUser")
+const allUser = require("../controllers/userManagement/Alluser")
+const singleUser = require("../controllers/userManagement/singleUser")
+const updatedUser = require("../controllers/userManagement/UpdateUser")
+const deleteUser = require("../controllers/userManagement/DeleteUser")
+const logIn = require("../controllers/userManagement/Login")
 const authMiddleware = require("../middleware/authMiddleware")
 // Create a new user
 router.post('/createuser', authMiddleware, createUser );

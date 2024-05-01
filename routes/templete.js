@@ -11,22 +11,24 @@ const updateCsvData = require("../controllers/Templete/updateCsvData");
 const assignUser = require("../controllers/Templete/assignUser");
 const getAllTask = require("../controllers/Templete/getAllTask");
 const getTask = require("../controllers/Templete/getTask");
+const taskUpdation = require("../controllers/Templete/taskUpdation");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 router.get("/get/templetedata/:id", getTempleteData); //templeteId
-router.get("/get/headerdata/:id",authMiddleware ,getHeaderData); //fileId
-router.get("/get/alltasks",authMiddleware, getAllTask); //admin
-router.get("/get/task/:id",authMiddleware, getTask); //user
+router.get("/get/headerdata/:id", authMiddleware, getHeaderData); //fileId
+router.get("/get/alltasks", authMiddleware, getAllTask); //admin
+router.get("/get/task/:id", authMiddleware, getTask); //user
 
-router.post("/get/templetes",authMiddleware, getTemplete);
-router.post("/get/csvdata",authMiddleware, getCsvData);
-router.post("/get/image",authMiddleware, getImage);
-router.post("/add/templete",authMiddleware, addTemplete);
-router.post("/upload/:id",authMiddleware, handleUpload); //templeteId
-router.post("/data",authMiddleware, handleData);
-router.post("/updatecsvdata/:id",authMiddleware, updateCsvData); // fileId
-router.post("/assign/user",authMiddleware, assignUser);
+router.post("/get/templetes", authMiddleware, getTemplete);
+router.post("/get/csvdata", authMiddleware, getCsvData);
+router.post("/get/image", authMiddleware, getImage);
+router.post("/add/templete", authMiddleware, addTemplete);
+router.post("/upload/:id", authMiddleware, handleUpload); //templeteId
+router.post("/data", authMiddleware, handleData);
+router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
+router.post("/assign/user", authMiddleware, assignUser);
+router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
 
 module.exports = router;

@@ -5,11 +5,11 @@ const getImage = async (req, res, next) => {
   const userPermission = req.permissions
   
   if(userPermission.dataEntry !== true){
-    return res.status(500).json({message: "user not authorised"})
+    return res.status(500).json({message: "User not authorized"})
   }
   try {
     const { imageName } = req.body;
-    console.log(">>>>>>>>>>>>>>>>",imageName)
+    // console.log(">>>>>>>>>>>>>>>>",imageName)
 
     if (!imageName) {
       return res.status(400).json({ error: "ImageName is Missing" });
@@ -23,7 +23,7 @@ const getImage = async (req, res, next) => {
       imageName
     );
 
-    console.log(sourceFilePath,"<<<<<<<<<<<<<<<<<<");
+    // console.log(sourceFilePath,"<<<<<<<<<<<<<<<<<<");
 
     const sourceFileExists = await fs
       .access(sourceFilePath)

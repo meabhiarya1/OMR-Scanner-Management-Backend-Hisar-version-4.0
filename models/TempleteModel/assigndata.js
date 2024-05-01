@@ -31,6 +31,15 @@ const Assigndata = sequelize.define("assigndata", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+
+  taskStatus: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
+
+  currentIndex: {
+    type: Sequelize.STRING,
+  },
 });
 
 module.exports = Assigndata;
