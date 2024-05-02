@@ -2,6 +2,12 @@ const Templete = require("../../models/TempleteModel/templete");
 const MetaData = require("../../models/TempleteModel/metadata");
 
 const getTemplete = (req, res, next) => {
+  console.log("object")
+  const userPermission = req.permissions
+  
+  if(userPermission.dataEntry !== true){
+    return res.status(500).json({message: "user not authorised"})
+  }
   try {
     Templete.findAll({
       include: [

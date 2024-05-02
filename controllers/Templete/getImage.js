@@ -2,13 +2,17 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const getImage = async (req, res, next) => {
+  const userPermission = req.permissions
+  
+  if(userPermission.dataEntry !== true){
+    return res.status(500).json({message: "User not authorized"})
+  }
   try {
-    const { imageName, id } = req.body;
-    // console.log(imageName)
-    // return
+    const { imageName } = req.body;
+    // console.log(">>>>>>>>>>>>>>>>",imageName)
 
-    if (!imageName || !id) {
-      return res.status(400).json({ error: "Id or ImageName is Missing" });
+    if (!imageName) {
+      return res.status(400).json({ error: "ImageName is Missing" });
     }
 
     const sourceFilePath = path.join(
@@ -19,10 +23,14 @@ const getImage = async (req, res, next) => {
       imageName
     );
 
+    // console.log(sourceFilePath,"<<<<<<<<<<<<<<<<<<");
+
     const sourceFileExists = await fs
       .access(sourceFilePath)
       .then(() => true)
       .catch(() => false);
+
+  
 
     if (!sourceFileExists) {
       return res.status(404).json({ error: "File not found" });

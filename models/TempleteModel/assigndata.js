@@ -1,42 +1,45 @@
 const Sequelize = require("sequelize");
 
-
 const sequelize = require("../../utils/database");
 
-const MetaData = sequelize.define("templetedata", {
+const Assigndata = sequelize.define("assigndata", {
   // id: {
   //   type: Sequelize.INTEGER,
   //   autoIncrement: true,
   //   allowNull: false,
   //   primaryKey: true,
   // },
-  attribute: {
+  userId: {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  coordinateX: {
+  templeteId: {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  coordinateY: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
-
-  width: {
+  fileId: {
     type: Sequelize.STRING,
     allowNull: false,
   },
 
-  height: {
+  max: {
     type: Sequelize.STRING,
     allowNull: false,
   },
 
-  fieldType: {
+  min: {
     type: Sequelize.STRING,
     allowNull: false,
+  },
+
+  taskStatus: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
+
+  currentIndex: {
+    type: Sequelize.STRING,
   },
 });
 
-module.exports = MetaData;
+module.exports = Assigndata;

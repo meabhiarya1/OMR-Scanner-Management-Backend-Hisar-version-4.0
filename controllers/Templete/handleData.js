@@ -4,8 +4,16 @@ const path = require("path");
 const Files = require("../../models/TempleteModel/files");
 
 const handleData = async (req, res, next) => {
-  const mappedData = req.body;
-  console.log(mappedData);
+  const userRole=req.role
+  console.log(userRole,"-----------")
+  if (userRole!="Admin") {
+    return res
+      .status(500)
+      .json({ message: "you dont have access for performing this action" });
+  }
+  const {mappedData} = req.body;
+  console.log(" --------" + mappedData.fileId);
+  // console.log(req.body)
   try {
     if (!mappedData.fileId) {
       return res.status(400).json({ error: "File not provided" });
@@ -36,9 +44,9 @@ const handleData = async (req, res, next) => {
       // console.log(newDataKeys);
       // console.log(newHeaders);
 
-      // if (newDataKeys.length !== newHeaders.length) {
-      //   return res.status(400).json({ error: "Mapped data headers mismatch" });
-      // }
+      if (newDataKeys.length !== newHeaders.length) {
+        return res.status(400).json({ error: "Mapped data headers mismatch" });
+      }
 
       const mergedObject = newDataKeys.reduce((acc, key, index) => {
         acc[key] = newHeaders[index];

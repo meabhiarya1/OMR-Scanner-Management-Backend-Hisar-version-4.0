@@ -1,10 +1,14 @@
 // controllers/userController.js
 
-const User = require('../models/User');
+const User = require('../../models/User');
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { userName, mobile, email, password, permissions } = req.body;
+  const { userName, mobile, email, password, permissions } = req.body.selectedUser;
+  const userRole = req.role;
+  if(userRole !== "Admin"){
+    return res.status(500).json({msg: "Only Admin can create user"});
+  }
 
   try {
     let user = await User.findOne({ where: { id } });

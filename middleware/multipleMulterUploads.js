@@ -21,6 +21,12 @@ const upload = multer({ storage: storage }).fields([
     { name: "secondInputCsvFile", maxCount: 1 },
 ]);
 const uploadCsv = (req, res, next) => {
+    const userPermissions=req.permissions
+
+    if(!userPermissions.csvCompare){
+        return res.status(500).json({message:"you dont have access for performing this action"})
+    }
+  
     upload(req, res, (err) => {
         if (err) {
             // Multer error occurred
