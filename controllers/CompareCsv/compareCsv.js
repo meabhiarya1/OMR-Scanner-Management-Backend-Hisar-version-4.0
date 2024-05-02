@@ -1,23 +1,18 @@
 const path = require("path");
 const fs = require("fs");
 const csvToJson = require("../../services/csvExtractor");
+const extractImagesFromZip = require("../../services/imageZipExtractor");
+
+const { parse } = require('json2csv');
 const compareCsv = async (req, res) => {
 
     // Access other form data parameters
-
-    const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName } = req.body;
-    // const firstInputFileName = req.body.firstInputFileName;
-    // const secondInputFileName = req.body.secondInputFileName;
-    // const primaryKey = req.body.primaryKey;
-    // const skippingKey = req.body.skippingKey;
-    // const imageColName = req.body.imageColName;
-
-
+    const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName, zipfileName } = req.body;
     const firstCSVFile = req.uploadedFiles.firstInputCsvFile
     const secondCSVFile = req.uploadedFiles.secondInputCsvFile
     const firstFilePath = path.join(__dirname, "../", "../", "multipleCsvCompare", firstInputFileName);
     const secondFilePath = path.join(__dirname, "../", "../", "multipleCsvCompare", secondInputFileName);
-console.log(firstCSVFile);
+
     const f1 = await csvToJson(firstFilePath)
     const f2 = await csvToJson(secondFilePath)
 
@@ -77,13 +72,30 @@ console.log(firstCSVFile);
 
 
 
-    // const csvData = csvParser(diff);
+    const csvData = parse(diff);
 
-    // // Set the content type to CSV
-    // res.set('Content-Type', 'text/csv');
+    const directoryPath = path.join(__dirname, "../", "../", 'ErrorCsv');
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(directoryPath)) {
+        fs.mkdirSync(directoryPath, { recursive: true });
+    }
 
-    // // Set the content disposition header to trigger download
-    // res.set('Content-Disposition', 'attachment; filename="data.csv"');
+    // Specify the file path within the directory
+    const filePath = path.join(directoryPath, 'output.csv');
+    // console.log(csvData);
+    // Write CSV data to a file
+    fs.writeFile(filePath, csvData, (err) => {
+        if (err) {
+            console.error('Error writing CSV file:', err);
+        } else {
+            console.log('CSV file saved successfully.');
+        }
+    });
+    // Set the content type to CSV
+    res.set('Content-Type', 'text/csv');
+
+    // Set the content disposition header to trigger download
+    res.set('Content-Disposition', 'attachment; filename="data.csv"');
 
     // Send the CSV data as the response
     res.status(200).send({

@@ -40,6 +40,13 @@ const Assigndata = sequelize.define("assigndata", {
   currentIndex: {
     type: Sequelize.STRING,
   },
+  moduleType: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  errorFilePath: {
+    type: Sequelize.STRING,
+  }
 });
 
 module.exports = Assigndata;

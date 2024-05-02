@@ -35,7 +35,6 @@ Files.belongsTo(Templete);
 sequelize
   .sync({ force: false })
   .then(() => {
-    // console.log("Database is connected");
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
