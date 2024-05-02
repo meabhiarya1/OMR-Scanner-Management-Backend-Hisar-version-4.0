@@ -25,3 +25,6 @@ csvFile
 extractedFiles
 zipFile
 multipleCsvCompare
+OmrImages
+OmrImagesZipfile
+ErrorCsv
