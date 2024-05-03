@@ -33,6 +33,9 @@ const uploadCsv = async (req, res, next) => {
     }
 
     upload(req, res, async (err) => {
+        const formatDate = (date) => {
+            return date.toISOString().replace(/[:.]/g, '-'); // Replace colons and periods with dashes
+        };
         if (err) {
             // Multer error occurred
             console.error("Multer error:", err);
@@ -46,8 +49,8 @@ const uploadCsv = async (req, res, next) => {
         const zipfileName = zipImageFile.originalname;
         // Call next middleware (csvUpload function) after upload is complete
         const omrImagesDir = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImagesZipfile');
-
-        const omrImages = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages');
+        const uploadDate = new Date();
+        const omrImages = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages' + `Images_${formatDate(uploadDate)}`);
 
         if (!fs.existsSync(omrImagesDir)) {
             fs.mkdirSync(omrImagesDir, { recursive: true });
@@ -79,10 +82,12 @@ const uploadCsv = async (req, res, next) => {
         // const zipImageFile = req.files["zipImageFile"] ? req.files["zipImageFile"] : null;
 
         // If zipImageFile exists
-        if (zipImageFile) {
-            // Set the destination directory for saving the zip image file
-            const destinationPath = path.join(omrImagesDir, zipImageFile.originalname);
 
+        // Set the destination directory for saving the zip image file
+
+        if (zipImageFile) {
+
+            const destinationPath = path.join(omrImagesDir);
             // Create a read stream for the uploaded file
             const readStream = fs.createReadStream(zipImageFile.path);
 
@@ -118,7 +123,8 @@ const uploadCsv = async (req, res, next) => {
         req.uploadedFiles = {
             firstInputCsvFile,
             secondInputCsvFile,
-            zipfileName
+            zipfileName,
+            destinationPath
         };
         next();
     });

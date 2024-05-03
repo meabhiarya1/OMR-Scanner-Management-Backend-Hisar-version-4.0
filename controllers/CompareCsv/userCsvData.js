@@ -28,7 +28,11 @@ const userData = async (req, res) => {
 
     const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
     const sendFile = errorJsonFile.splice(min - 1, max);
-    console.log(sendFile)
+    const sendFileData = sendFile[0];
+    const imageName = sendFile[0].IMAGE_NAME;
+    console.log(imageName)
+    console.log(sendFileData);
+    res.status(201).send({ message: "Task found succesfully",  data: sendFileData })
 }
 
 module.exports = userData;

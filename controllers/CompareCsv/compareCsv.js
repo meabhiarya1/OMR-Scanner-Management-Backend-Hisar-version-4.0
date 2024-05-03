@@ -7,7 +7,7 @@ const { parse } = require('json2csv');
 const compareCsv = async (req, res) => {
 
     // Access other form data parameters
-    const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName, zipfileName } = req.body;
+    const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName, zipfileName ,destinationPath } = req.body;
     const firstCSVFile = req.uploadedFiles.firstInputCsvFile
     const secondCSVFile = req.uploadedFiles.secondInputCsvFile
     const firstFilePath = path.join(__dirname, "../", "../", "COMPARECSV_FILES", "multipleCsvCompare", firstInputFileName);
@@ -29,7 +29,7 @@ const compareCsv = async (req, res) => {
                         const val1 = value;
                         const val2 = f2[j][key];
                         const imgPathArr = f1[i][imageColName]?.split("\\");
-                        const imgName = imgPathArr[imgPathArr.length - 1]
+                        const imgName = imgPathArr[imgPathArr.length - 1].substring(1);
 
                         if (!skippingKey.includes(key)) {
 
@@ -51,7 +51,7 @@ const compareCsv = async (req, res) => {
                         const val1 = value;
                         const val2 = f2[j][key];
                         const imgPathArr = f1[i][imageColName].split("\\");
-                        const imgName = imgPathArr[imgPathArr.length - 1]
+                        const imgName = imgPathArr[imgPathArr.length - 1].substring(1);
 
                         if (!skippingKey.includes(key)) {
 
@@ -145,7 +145,8 @@ const compareCsv = async (req, res) => {
         csvFile: f1,
         data: diff,
         errorFilePath: errorFilePath,
-        correctedFilePath: correctionFilePath
+        correctedFilePath: correctionFilePath,
+        imageDirectoryName : destinationPath
     });
 }
 
