@@ -32,7 +32,7 @@ console.log(firstCSVFile);
                     if (value !== f2[j][key]) {
                         const val1 = value;
                         const val2 = f2[j][key];
-                        const imgPathArr = f1[i][imageColName].split("\\");
+                        const imgPathArr = f1[i][imageColName]?.split("\\");
                         const imgName = imgPathArr[imgPathArr.length - 1]
 
                         if (!skippingKey.includes(key)) {

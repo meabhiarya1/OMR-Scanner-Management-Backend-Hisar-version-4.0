@@ -4,16 +4,15 @@ const path = require("path");
 const Files = require("../../models/TempleteModel/files");
 
 const handleData = async (req, res, next) => {
-  const userRole=req.role
-  console.log(userRole,"-----------")
-  if (userRole!="Admin") {
+  const userRole = req.role;
+  if (userRole != "Admin") {
     return res
       .status(500)
-      .json({ message: "you dont have access for performing this action" });
+      .json({ message: "You don't have access for performing this action" });
   }
-  const {mappedData} = req.body;
-  console.log(" --------" + mappedData.fileId);
-  // console.log(req.body)
+  const { mappedData } = req.body;
+  // console.log(" --------" + mappedData);
+  // console.log(mappedData.fileId);
   try {
     if (!mappedData.fileId) {
       return res.status(400).json({ error: "File not provided" });
@@ -35,14 +34,17 @@ const handleData = async (req, res, next) => {
       const workbook = XLSX.readFile(filePath);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+      const data = XLSX.utils.sheet_to_json(worksheet, {
+        raw: true,
+        defval: "",
+      });
 
       const newDataKeys = Object.keys(data[0]);
       const newHeaders = Object.values(mappedData);
 
       newHeaders.pop();
-      // console.log(newDataKeys);
-      // console.log(newHeaders);
+      // console.log(newDataKeys.length);
+      // console.log(newHeaders.length);
 
       if (newDataKeys.length !== newHeaders.length) {
         return res.status(400).json({ error: "Mapped data headers mismatch" });
@@ -52,7 +54,6 @@ const handleData = async (req, res, next) => {
         acc[key] = newHeaders[index];
         return acc;
       }, {});
-
 
       if (JSON.stringify(data[0]) !== JSON.stringify(mergedObject)) {
         data.unshift(mergedObject);
@@ -71,7 +72,7 @@ const handleData = async (req, res, next) => {
       res.status(200).json("Header added successfully");
     });
   } catch (error) {
-    console.error("Error handling data:", error);
+    // console.error("Error handling data:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -1,20 +1,28 @@
 const fs = require("fs").promises;
 const path = require("path");
+const Assigndata = require("../../models/TempleteModel/assigndata");
 
 const getImage = async (req, res, next) => {
-  const userPermission = req.permissions
-  
-  if(userPermission.dataEntry !== true){
-    return res.status(500).json({message: "User not authorized"})
+  const userPermission = req.permissions;
+  if (userPermission.dataEntry !== true) {
+    return res.status(500).json({ message: "User not authorized" });
   }
-  try {
-    const { imageName } = req.body;
-    // console.log(">>>>>>>>>>>>>>>>",imageName)
 
+  try {
+    const { imageName, currentIndex, id } = req.body;
+    console.log(">>>>>>>>>>>>>>>>", currentIndex, id);
     if (!imageName) {
       return res.status(400).json({ error: "ImageName is Missing" });
     }
+    const assigndataInstance = await Assigndata.findByPk(id);
 
+    if (!assigndataInstance) {
+      return res.status(400).json({ error: "CurrentIndex mismatched with ID" });
+
+    }
+    assigndataInstance.currentIndex = currentIndex;
+
+      await assigndataInstance.save();
     const sourceFilePath = path.join(
       __dirname,
       "..",
@@ -29,8 +37,6 @@ const getImage = async (req, res, next) => {
       .access(sourceFilePath)
       .then(() => true)
       .catch(() => false);
-
-  
 
     if (!sourceFileExists) {
       return res.status(404).json({ error: "File not found" });

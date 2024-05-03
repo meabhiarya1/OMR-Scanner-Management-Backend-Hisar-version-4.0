@@ -32,7 +32,7 @@ const getCsvData = async (req, res, next) => {
     const worksheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json(worksheet, {
       raw: true,
-      defval: "BLANK",
+      defval: "",
     });
 
     let { min, max } = req.body.taskData;

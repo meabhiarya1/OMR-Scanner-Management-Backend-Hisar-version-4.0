@@ -1,6 +1,7 @@
 const Assigndata = require("../../models/TempleteModel/assigndata");
 
 const assignUser = async (req, res, next) => {
+  
   const userTasks = req.body;
   console.log(req.body, "assign");
   try {

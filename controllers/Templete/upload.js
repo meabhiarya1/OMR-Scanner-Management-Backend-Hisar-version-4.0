@@ -93,6 +93,7 @@ const uploadPromise = (req, res, next, id, imageColName) => {
             const worksheet = workbook.Sheets[sheetName];
             const data = XLSX.utils.sheet_to_json(worksheet, {
               raw: true,
+              defval: ""
             });
 
             const updatedJson = data.map((obj) => {
@@ -106,7 +107,8 @@ const uploadPromise = (req, res, next, id, imageColName) => {
               obj[image] = `${pathDir}/` + `${filename}`;
             });
 
-            // console.log(updatedJson)
+            console.log(updatedJson[0])
+            console.log(updatedJson[1])
 
             const csvData = XLSX.utils.json_to_sheet(updatedJson);
 
@@ -133,9 +135,9 @@ const uploadPromise = (req, res, next, id, imageColName) => {
 };
 
 const handleUpload = async (req, res, next) => {
-  const userRole=req.role
-  console.log(userRole,"-----------")
-  if (userRole!="Admin") {
+  const userRole = req.role;
+  // console.log(userRole, "-----------");
+  if (userRole != "Admin") {
     return res
       .status(500)
       .json({ message: "you dont have access for performing this action" });
