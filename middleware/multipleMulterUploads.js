@@ -4,9 +4,9 @@ const path = require("path");
 const unzipper = require('unzipper');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        let destinationFolder = "multipleCsvCompare/";
+        let destinationFolder = "COMPARECSV_FILES/" + "multipleCsvCompare";
         if (!fs.existsSync(destinationFolder)) {
-            fs.mkdirSync(destinationFolder);
+            fs.mkdirSync(destinationFolder, { recursive: true });
         }
         cb(null, destinationFolder); // Destination folder
     },
@@ -45,9 +45,17 @@ const uploadCsv = async (req, res, next) => {
         const zipImageFile = req.files["zipImageFile"] ? req.files["zipImageFile"][0] : null;
         const zipfileName = zipImageFile.originalname;
         // Call next middleware (csvUpload function) after upload is complete
-        const omrImagesDir = path.join(__dirname, "../", 'OmrImagesZipfile');
+        const omrImagesDir = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImagesZipfile');
 
-        const omrImages = path.join(__dirname, "../", 'OmrImages');
+        const omrImages = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages');
+
+        if (!fs.existsSync(omrImagesDir)) {
+            fs.mkdirSync(omrImagesDir, { recursive: true });
+        }
+        if (!fs.existsSync(omrImages)) {
+            fs.mkdirSync(omrImages, { recursive: true });
+        }
+
         // Function to extract the uploaded zip file
         const extractZipFile = (zipFilePath) => {
             return new Promise((resolve, reject) => {
@@ -64,12 +72,7 @@ const uploadCsv = async (req, res, next) => {
             });
         };
 
-        if (!fs.existsSync(omrImagesDir)) {
-            fs.mkdirSync(omrImagesDir);
-        }
-        if (!fs.existsSync(omrImages)) {
-            fs.mkdirSync(omrImages);
-        }
+
 
 
         // Assuming zipImageFile is the uploaded zip image file obtained from req.files

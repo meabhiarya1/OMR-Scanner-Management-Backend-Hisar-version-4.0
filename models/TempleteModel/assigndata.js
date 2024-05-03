@@ -46,6 +46,9 @@ const Assigndata = sequelize.define("assigndata", {
   },
   errorFilePath: {
     type: Sequelize.STRING,
+  },
+  correctedCsvFilePath: {
+    type: Sequelize.STRING
   }
 });
 

@@ -9,7 +9,7 @@ const deleteUser = require("../controllers/userManagement/DeleteUser")
 const logIn = require("../controllers/userManagement/Login")
 const authMiddleware = require("../middleware/authMiddleware")
 // Create a new user
-router.post('/createuser', createUser );
+router.post('/createuser',authMiddleware, createUser );
 
 // Get all users
 router.post('/getallusers',authMiddleware, allUser);

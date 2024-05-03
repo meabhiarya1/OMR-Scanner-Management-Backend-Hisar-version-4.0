@@ -2,12 +2,14 @@ const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 
 const createUser = async (req, res) => {
-  const { userName, mobile,role, email, password, permissions } = req.body
-//   const userRole = req.role;
-// console.log("hkhk");
-//   if(userRole !== "Admin"){
-//     return res.status(500).json({message: "Only Admin can create user"});
-//   }
+  console.log(req.body)
+  const { userName, mobile,role, email, password, permissions } = req.body.userData
+  const userRole = req.role;
+
+
+  if(userRole !== "Admin"){
+    return res.status(500).json({message: "Only Admin can create user"});
+  }
   
   if (!userName || !mobile || !email || !password || !permissions || !role) {
     return res.status(422).json({ error: "Please fill all fields properly" });
