@@ -3,6 +3,7 @@ const fs = require("fs");
 const csvToJson = require("../../services/csvExtractor");
 const { parse } = require('json2csv');
 
+
 const compareCsv = async (req, res) => {
 
     // Access other form data parameters
@@ -143,7 +144,7 @@ const compareCsv = async (req, res) => {
     res.status(200).send({
         csvFile: f1,
         data: diff,
-        errorFilePath: directoryPath,
+        errorFilePath: errorFilePath,
         correctedFilePath: correctionFilePath
     });
 }
