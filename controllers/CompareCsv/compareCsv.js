@@ -7,7 +7,8 @@ const { parse } = require('json2csv');
 const compareCsv = async (req, res) => {
 
     // Access other form data parameters
-    const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName, zipfileName ,destinationPath } = req.body;
+    const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName } = req.body;
+    const { omrImages } = req.uploadedFiles;
     const firstCSVFile = req.uploadedFiles.firstInputCsvFile
     const secondCSVFile = req.uploadedFiles.secondInputCsvFile
     const firstFilePath = path.join(__dirname, "../", "../", "COMPARECSV_FILES", "multipleCsvCompare", firstInputFileName);
@@ -146,7 +147,7 @@ const compareCsv = async (req, res) => {
         data: diff,
         errorFilePath: errorFilePath,
         correctedFilePath: correctionFilePath,
-        imageDirectoryName : destinationPath
+        imageDirectoryName: omrImages
     });
 }
 

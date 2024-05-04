@@ -5,7 +5,7 @@ const assignUser = async (req, res, next) => {
   console.log(req.body, "assign");
   try {
     const creationPromises = userTasks.map(async (task) => {
-      const { userId, templeteId, fileId, max, min, moduleType, correctedFilePath, errorFilePath } = task;
+      const { userId, templeteId, fileId, max, min, moduleType, correctedFilePath, errorFilePath, imageDirectoryPath } = task;
       await Assigndata.create({
         userId: userId,
         templeteId: templeteId,
@@ -15,7 +15,8 @@ const assignUser = async (req, res, next) => {
         currentIndex: min,
         moduleType: moduleType,
         correctedCsvFilePath: correctedFilePath,
-        errorFilePath: errorFilePath
+        errorFilePath: errorFilePath,
+        imageDirectoryPath: imageDirectoryPath
       });
     });
 

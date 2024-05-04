@@ -11,12 +11,16 @@ const MetaData = require("./models/TempleteModel/metadata");
 const Files = require("./models/TempleteModel/files");
 const PORT = 4000;
 const upload = require("./routes/upload");
+const path = require("path")
 //middlewares
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// app.use('/images', express.static(imageDirectoryPath));
+const imageDirectoryPath = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages',"Images_2024-05-04T04-38-30-972Z/005.jpg")
+app.use('/images', express.static(imageDirectoryPath));
 //all routes
 app.use("/users", userRoutes);
 app.use(upload);

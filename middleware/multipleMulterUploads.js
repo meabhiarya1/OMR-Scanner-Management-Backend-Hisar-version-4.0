@@ -47,47 +47,61 @@ const uploadCsv = async (req, res, next) => {
         const secondInputCsvFile = req.files["secondInputCsvFile"] ? req.files["secondInputCsvFile"][0] : null;
         const zipImageFile = req.files["zipImageFile"] ? req.files["zipImageFile"][0] : null;
         const zipfileName = zipImageFile.originalname;
-        // Call next middleware (csvUpload function) after upload is complete
-        const omrImagesDir = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImagesZipfile');
-        const uploadDate = new Date();
-        const omrImages = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages' + `Images_${formatDate(uploadDate)}`);
 
-        if (!fs.existsSync(omrImagesDir)) {
-            fs.mkdirSync(omrImagesDir, { recursive: true });
+        const uploadDate = new Date();
+        const omrImagesZipDir = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImagesZipfile');
+        const omrImages = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages', `Images_${formatDate(uploadDate)}`);
+
+        if (!fs.existsSync(omrImagesZipDir)) {
+            fs.mkdirSync(omrImagesZipDir, { recursive: true });
         }
         if (!fs.existsSync(omrImages)) {
             fs.mkdirSync(omrImages, { recursive: true });
         }
 
-        // Function to extract the uploaded zip file
+        // // Function to extract the uploaded zip file
+        // const extractZipFile = (zipFilePath) => {
+        //     return new Promise((resolve, reject) => {
+        //         fs.createReadStream(zipFilePath)
+        //             .pipe(unzipper.Extract({ path: omrImages }))
+        //             .on('close', () => {
+        //                 console.log('Zip file extracted successfully.');
+        //                 resolve();
+        //             })
+        //             .on('error', (error) => {
+        //                 console.error('Error extracting zip file:', error);
+        //                 reject(error);
+        //             });
+        //     });
+        // };
         const extractZipFile = (zipFilePath) => {
             return new Promise((resolve, reject) => {
                 fs.createReadStream(zipFilePath)
-                    .pipe(unzipper.Extract({ path: omrImages }))
-                    .on('close', () => {
-                        console.log('Zip file extracted successfully.');
-                        resolve();
+                    .pipe(unzipper.Parse())
+                    .on('entry', (entry) => {
+                        const fileName = entry.path;
+                        const destinationPath = path.join(omrImages, path.basename(fileName));
+
+                        if (entry.type === 'File') {
+                            entry.pipe(fs.createWriteStream(destinationPath));
+                        } else if (entry.type === 'Directory') {
+                            fs.mkdirSync(destinationPath, { recursive: true });
+                        }
                     })
                     .on('error', (error) => {
                         console.error('Error extracting zip file:', error);
                         reject(error);
+                    })
+                    .on('close', () => {
+                        console.log('Zip file extracted successfully.');
+                        resolve();
                     });
             });
         };
 
-
-
-
-        // Assuming zipImageFile is the uploaded zip image file obtained from req.files
-        // const zipImageFile = req.files["zipImageFile"] ? req.files["zipImageFile"] : null;
-
-        // If zipImageFile exists
-
-        // Set the destination directory for saving the zip image file
-
         if (zipImageFile) {
 
-            const destinationPath = path.join(omrImagesDir);
+            const destinationPath = path.join(omrImagesZipDir, zipfileName);
             // Create a read stream for the uploaded file
             const readStream = fs.createReadStream(zipImageFile.path);
 
@@ -100,7 +114,7 @@ const uploadCsv = async (req, res, next) => {
             // Listen for the 'finish' event to know when the file write is complete
             writeStream.on('finish', async () => {
                 console.log('Zip image file saved successfully.');
-
+                // `ZipImage_${formatDate(uploadDate)}`
                 try {
                     // Extract the zip file
                     await extractZipFile(destinationPath);
@@ -124,7 +138,7 @@ const uploadCsv = async (req, res, next) => {
             firstInputCsvFile,
             secondInputCsvFile,
             zipfileName,
-            destinationPath
+            omrImages
         };
         next();
     });
