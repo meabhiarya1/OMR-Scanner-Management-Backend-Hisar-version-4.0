@@ -26,9 +26,10 @@ const userData = async (req, res) => {
     const task = await Assigndata.findOne({ where: { id: taskId } });
     const { max, min, errorFilePath, correctedCsvFilePath, imageDirectoryPath, currentIndex } = task;
 
-
+    const { currindex } = req.headers;
+    console.log(currindex);
     const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
-    const sendFile = errorJsonFile[min - 1];
+    const sendFile = errorJsonFile[currindex];
     // const sendFileData = sendFile[0];
     const imageName = sendFile.IMAGE_NAME;
 
