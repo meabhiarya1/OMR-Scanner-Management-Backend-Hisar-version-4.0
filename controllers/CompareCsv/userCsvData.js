@@ -22,31 +22,35 @@ function readCSVAndConvertToJSON(filePath) {
     });
 }
 const userData = async (req, res) => {
-    const taskId = req.params.taskId;
-    const task = await Assigndata.findOne({ where: { id: taskId } });
-    const { max, min, errorFilePath, correctedCsvFilePath, imageDirectoryPath, currentIndex } = task;
+    try {
+        const taskId = req.params.taskId;
+        const task = await Assigndata.findOne({ where: { id: taskId } });
+        const { max, min, errorFilePath, correctedCsvFilePath, imageDirectoryPath, currentIndex } = task;
+        const { currindex } = req.headers;
 
-    const { currindex } = req.headers;
-    console.log(currindex);
-    const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
-    const sendFile = errorJsonFile[currindex];
-    // const sendFileData = sendFile[0];
-    const imageName = sendFile.IMAGE_NAME;
+        const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
+        const sendFile = errorJsonFile[currindex - 1];
+        // const sendFileData = sendFile[0];
+        const imageName = sendFile.IMAGE_NAME;
 
-    const image = path.join(imageDirectoryPath, imageName);
-    // Read the image file and convert it to base64
-    fs.readFile(image, { encoding: 'base64' }, (err, data) => {
-        if (err) {
-            console.error("Error reading image:", err);
-            return res.status(500).send({ message: "Error reading image" });
-        }
-        // Construct the base64 URL
-        const base64URL = `data:image/jpeg;base64,${data}`;
+        const image = path.join(imageDirectoryPath, imageName);
+        // Read the image file and convert it to base64
+        fs.readFile(image, { encoding: 'base64' }, (err, data) => {
+            if (err) {
+                console.error("Error reading image:", err);
 
-        // Send the response with the base64 URL
-        res.status(201).send({ message: "Task found succesfully", data: sendFile, currentIndex: currentIndex, imageURL: base64URL, min: min, max: max })
+                return res.status(500).send({ message: "Error reading image" });
+            }
+            // Construct the base64 URL
+            const base64URL = `data:image/jpeg;base64,${data}`;
 
-    });
+            // Send the response with the base64 URL
+            res.status(201).send({ message: "Task found succesfully", data: sendFile, currentIndex: currentIndex, imageURL: base64URL, min: min, max: max })
+
+        });
+    } catch (err) {
+        console.error(err)
+    }
 }
 
 module.exports = userData;
