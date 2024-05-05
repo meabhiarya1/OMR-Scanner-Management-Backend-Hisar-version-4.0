@@ -21,7 +21,7 @@ function readCSVAndConvertToJSON(filePath) {
             });
     });
 }
-const userData = async (req, res) => {
+exports.userData = async (req, res) => {
     try {
         const taskId = req.params.taskId;
         const task = await Assigndata.findOne({ where: { id: taskId } });
@@ -29,6 +29,8 @@ const userData = async (req, res) => {
         const { currindex } = req.headers;
 
         const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
+        // console.log(errorJsonFile.length);
+        // const accessibleErrorJsonFile = errorJsonFile.splice(min-1,max);
         const sendFile = errorJsonFile[currindex - 1];
         // const sendFileData = sendFile[0];
         const imageName = sendFile.IMAGE_NAME;
@@ -53,4 +55,17 @@ const userData = async (req, res) => {
     }
 }
 
-module.exports = userData;
+exports.saveData = async (req,res)=>{
+    try {
+        const {taskId} = req.params;
+        const task = await Assigndata.findOne({ where: { id: taskId } });
+        const { errorFilePath, correctedCsvFilePath, imageDirectoryPath, currentIndex } = task;
+        const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
+        const errorFile = errorJsonFile[currentIndex-1]
+        const correctedCsvJsonFile = await readCSVAndConvertToJSON(correctedCsvFilePath);
+    }catch(err){
+
+    }
+}
+
+// module.exports = userData;

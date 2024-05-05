@@ -50,7 +50,8 @@ const compareCsv = async (req, res) => {
                                     "COLUMN_NAME": key,
                                     "FILE_1_DATA": val1,
                                     "FILE_2_DATA": val2,
-                                    "IMAGE_NAME": imgName
+                                    "IMAGE_NAME": imgName,
+                                    "CORRECTED" :[]
                                 }
                                 diff.push(obj);
                             }
@@ -72,7 +73,8 @@ const compareCsv = async (req, res) => {
                                     "COLUMN_NAME": key,
                                     "FILE_1_DATA": val1,
                                     "FILE_2_DATA": val2,
-                                    "IMAGE_NAME": imgName
+                                    "IMAGE_NAME": imgName,
+                                    "CORRECTED" :[]
                                 }
                                 diff.push(obj);
                             }
