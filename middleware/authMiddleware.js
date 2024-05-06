@@ -19,7 +19,7 @@ const authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(500).json({ message: "user not found", status: false });
     }
-    console.log(user.permissions);
+    req.user = user;
     req.permissions = user.permissions;
     req.role = user.role;
     next();

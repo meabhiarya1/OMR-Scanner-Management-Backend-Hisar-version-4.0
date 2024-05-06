@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/uploadcsv", authMiddleware, multerUpload, uploadCsv);
 router.post("/compareData", authMiddleware, multipleMulterUpload, compareCsv)
-router.get("/compareAssigned/:taskId", userData);
-router.post("/saveAnswer/:taskId", saveData)
+router.get("/compareAssigned/:taskId", authMiddleware, userData);
+// router.post("/saveAnswer/:taskId", authMiddleware, saveData)
 
 module.exports = router;
