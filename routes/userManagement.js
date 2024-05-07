@@ -10,7 +10,7 @@ const logIn = require("../controllers/userManagement/Login")
 const authMiddleware = require("../middleware/authMiddleware")
 // Create a new user
 router.post('/createuser',authMiddleware, createUser );
-
+// router.post('/createuser', createUser );
 // Get all users
 router.post('/getallusers',authMiddleware, allUser);
 
