@@ -132,9 +132,6 @@ exports.saveData = async (req, res) => {
 
       // Parse CSV content to JSON
       const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
-
-
-      // Update the necessary fields
       const errorFile = errorJsonFile[currentIndexValue - 1];
       const parsedFile = JSON.parse(errorFile.CORRECTED)
       if (parsedFile.length === 0) {
@@ -187,7 +184,7 @@ exports.saveData = async (req, res) => {
       // await fs.writeFileSync(correctedCsvFilePath, updatedCorrectedCSVContent, { encoding: 'utf8' });
 
       // // Respond with success message
-      // res.status(200).json({ message: 'Files updated successfully' });
+      res.status(200).json({ message: 'saved updated successfully' });
     } else {
       throw new Error("Task not found.")
     }

@@ -9,19 +9,19 @@ const deleteUser = require("../controllers/userManagement/DeleteUser")
 const logIn = require("../controllers/userManagement/Login")
 const authMiddleware = require("../middleware/authMiddleware")
 // Create a new user
-router.post('/createuser',authMiddleware, createUser );
+router.post('/createuser', authMiddleware, createUser);
 // router.post('/createuser', createUser );
 // Get all users
-router.post('/getallusers',authMiddleware, allUser);
+router.post('/getallusers', authMiddleware, allUser);
 
 // get single user 
-router.post('/getuser',authMiddleware ,singleUser );
+router.post('/getuser', authMiddleware, singleUser);
 
 // updated user
-router.post('/updateuser/:id', authMiddleware,  updatedUser);
+router.post('/updateuser/:id', authMiddleware, updatedUser);
 
 // delete user
-router.post('/deleteuser/:id' , authMiddleware, deleteUser)
+router.post('/deleteuser/:id', authMiddleware, deleteUser)
 
 // login user
 router.post('/login', logIn)

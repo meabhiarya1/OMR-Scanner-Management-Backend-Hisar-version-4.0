@@ -6,15 +6,16 @@ const addTemplete = async (req, res, next) => {
   const { templateData, metaData } = req.body.data;
   const userRole = req.role;
 
-  if(userRole !== "Admin"){
-    return res.status(500).json({message: "Only Admin can create user"});
+  if (userRole !== "Admin") {
+    return res.status(500).json({ message: "Only Admin can create user" });
   }
-  // console.log(templateData, metaData);
+
   try {
     const templeteResult = await Templete.create({
       name: templateData.name,
+      TempleteType: "Data Entry",
     });
-    // console.log(templeteResult);
+
 
     if (!templeteResult) {
       throw new Error("Failed to create template");

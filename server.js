@@ -18,8 +18,7 @@ app.use(express.json());
 app.use(bodyParser.json({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// app.use('/images', express.static(imageDirectoryPath));
-const imageDirectoryPath = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages',"Images_2024-05-04T04-38-30-972Z/005.jpg")
+const imageDirectoryPath = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages', "Images_2024-05-04T04-38-30-972Z/005.jpg")
 app.use('/images', express.static(imageDirectoryPath));
 //all routes
 app.use("/users", userRoutes);
