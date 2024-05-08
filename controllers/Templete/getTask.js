@@ -1,7 +1,7 @@
 const Assigndata = require("../../models/TempleteModel/assigndata");
 
 const getTask = async (req, res, next) => {
-  console.log("user--------------------")
+  // console.log("user--------------------")
   const id = req.params.id;
   try {
     const response = await Assigndata.findAll({ where: { userId: id } });

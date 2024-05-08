@@ -6,7 +6,6 @@ const secretKey = "omrscanner";
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
 
   try {
     if (!email || !password) {
@@ -32,7 +31,7 @@ const login = async (req, res) => {
       },
       secretKey
     );
-    res.status(200).json({ message: "Login successful", token });
+    res.status(200).json({ message: "Login successful", token ,userData:user});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
