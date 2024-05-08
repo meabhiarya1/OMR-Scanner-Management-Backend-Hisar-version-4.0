@@ -6,6 +6,7 @@ const multipleMulterUpload = require("../middleware/multipleMulterUploads");
 const authMiddleware = require("../middleware/authMiddleware");
 const { userData, saveData } = require("../controllers/CompareCsv/userCsvData");
 const assignTask = require("../controllers/CompareCsv/assignTask");
+const assignedTask = require("../controllers/CompareCsv/assignedTask");
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.post("/compareData", authMiddleware, multipleMulterUpload, compareCsv)
 router.get("/compareAssigned/:taskId", authMiddleware, userData);
 router.post("/saveAnswer/:taskId", authMiddleware, saveData);
 router.post("/assign", authMiddleware, assignTask);
+router.get("/assignedTasks",authMiddleware,assignedTask)
 
 module.exports = router;
