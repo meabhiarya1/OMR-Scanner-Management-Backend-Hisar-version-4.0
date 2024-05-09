@@ -5,11 +5,11 @@ const secretKey = "omrscanner";
 const authMiddleware = async (req, res, next) => {
   const { token } = req.headers;
 
-  // console.log(req.body, "--token",req.files);
-  // console.log(token,"token")
   if (!token) {
     return res.status(401).json({ message: "Unauthorized - Token Not Provided" });
+    return res.status(401).json({ message: "Unauthorized - Token Not Provided" });
   }
+
   try {
     const decoded = jwt.verify(token, secretKey);
     const user = await User.findOne({
@@ -24,9 +24,11 @@ const authMiddleware = async (req, res, next) => {
     req.user = user;
     req.permissions = user.permissions;
     req.role = user.role;
+    req.user = user;
     next();
   } catch (error) {
     res.status(401).json({ message: "Unauthorized - Invalid Token" });
   }
 };
+
 module.exports = authMiddleware;

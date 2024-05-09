@@ -12,7 +12,6 @@ const createUser = async (req, res) => {
   if (!userName || !mobile || !email || !password || !permissions || !role) {
     return res.status(422).json({ error: "Please fill all fields properly" });
   }
-
   const parsedPermissions =
     typeof permissions === "string" ? JSON.parse(permissions) : permissions;
 

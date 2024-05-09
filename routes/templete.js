@@ -13,6 +13,8 @@ const getAllTask = require("../controllers/Templete/getAllTask");
 const getTask = require("../controllers/Templete/getTask");
 const taskUpdation = require("../controllers/Templete/taskUpdation");
 const authMiddleware = require("../middleware/authMiddleware");
+const duplicateRemoval = require("../controllers/Templete/duplicateRemoval");
+const deleteDuplicateData = require("../controllers/Templete/deleteDuplicateData");
 
 const router = express.Router();
 
@@ -30,5 +32,7 @@ router.post("/data", authMiddleware, handleData);
 router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
 router.post("/assign/user", authMiddleware, assignUser);
 router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
+router.post("/duplicate/data", authMiddleware, duplicateRemoval);
+router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
 
 module.exports = router;

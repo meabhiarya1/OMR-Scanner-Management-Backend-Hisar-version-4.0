@@ -9,7 +9,7 @@ const router = express.Router();
 
 exports.uploadKey = (req, res, next) => {
 
-  const userPermission  = req.permission;
+  const userPermission = req.permission;
   console.log(userPermission)
   //   console.log(req.file);
 

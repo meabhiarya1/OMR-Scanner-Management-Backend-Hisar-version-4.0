@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
 
-const secretKey = 'omrscanner';
+const secretKey = "omrscanner";
 
 const getSingleUser = async (req, res) => {
   const  {token}  = req.headers;
@@ -37,3 +37,4 @@ const getSingleUser = async (req, res) => {
 };
 
 module.exports = getSingleUser;
+
