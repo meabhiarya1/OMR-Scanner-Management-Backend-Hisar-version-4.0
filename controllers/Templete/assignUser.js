@@ -3,7 +3,7 @@ const Assigndata = require("../../models/TempleteModel/assigndata");
 const assignUser = async (req, res, next) => {
   
   const userTasks = req.body;
-  console.log(req.body, "assign");
+  // console.log(req.body, "assign");
   try {
     const creationPromises = userTasks.map(async (task) => {
       const { userId, templeteId, fileId, max, min } = task;

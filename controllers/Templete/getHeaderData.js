@@ -15,7 +15,7 @@ const getHeaderData = (req, res, next) => {
 
   try {
     Files.findOne({ where: { id: req.params.id } }).then((fileData) => {
-      console.log(fileData);
+      // console.log(fileData);
       if (!fileData) {
         return res.status(404).json({ error: "File not found" });
       }

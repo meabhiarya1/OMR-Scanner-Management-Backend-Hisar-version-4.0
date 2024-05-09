@@ -72,7 +72,7 @@ const handleData = async (req, res, next) => {
       res.status(200).json("Header added successfully");
     });
   } catch (error) {
-    // console.error("Error handling data:", error);
+    console.error("Error handling data:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
