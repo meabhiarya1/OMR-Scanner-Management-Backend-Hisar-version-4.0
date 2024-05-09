@@ -8,7 +8,7 @@ const authMiddleware = async (req, res, next) => {
   // console.log(req.body, "--token",req.files);
   // console.log(token,"token")
   if (!token) {
-    return res.status(500).json({ message: "Token Not Exist" });
+    return res.status(401).json({ message: "Unauthorized - Token Not Provided" });
   }
   try {
     const decoded = jwt.verify(token, secretKey);
@@ -17,14 +17,16 @@ const authMiddleware = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(500).json({ message: "user not found", status: false });
+      // return res.status(500).json({ message: "user not found", status: false });
+      return res.status(401).json({ message: "Unauthorized - Invalid User" });
+
     }
     req.user = user;
     req.permissions = user.permissions;
     req.role = user.role;
     next();
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(401).json({ message: "Unauthorized - Invalid Token" });
   }
 };
 module.exports = authMiddleware;
