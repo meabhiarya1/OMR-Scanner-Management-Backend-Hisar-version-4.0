@@ -4,7 +4,7 @@ const Files = require("../../models/TempleteModel/files");
 const path = require("path");
 const fs = require("fs");
 const unzipper = require("unzipper");
-// const AdmZip = require("adm-zip");
+const AdmZip = require("adm-zip");
 const getAllDirectories = require("../../services/directoryFinder");
 
 const storage = multer.diskStorage({
@@ -32,7 +32,7 @@ const upload = multer({ storage: storage }).fields([
 ]);
 
 // const uploadPromise = (req, res, next, id, imageColName) => {
-//   console.log("third");
+//   // console.log(imageColName);
 //   return new Promise((resolve, reject) => {
 //     upload(req, res, async function (err) {
 //       if (err) {
@@ -59,15 +59,11 @@ const upload = multer({ storage: storage }).fields([
 //           req.files.zipFile[0].filename
 //         );
 
-//         console.log(zipFilePath);
-
 //         if (fs.existsSync(zipFilePath)) {
 //           const extractedFilesFolderPath = path.join(
 //             __dirname,
 //             "../../extractedFiles"
 //           );
-//           console.log(">>>>>>>>>>>>>>>>>", extractedFilesFolderPath);
-
 //           if (!fs.existsSync(extractedFilesFolderPath)) {
 //             fs.mkdirSync(extractedFilesFolderPath);
 //           }
@@ -77,32 +73,12 @@ const upload = multer({ storage: storage }).fields([
 //             req.files.zipFile[0].filename.replace(".zip", "")
 //           );
 
-//           console.log("fourth");
-//           // return
-
 //           // Create a folder for zip file
-//           if (!fs.existsSync(destinationFolderPath)) {
-//             fs.mkdirSync(destinationFolderPath);
-//           }
-//           // Blocking operation // sync task
+//           fs.mkdirSync(destinationFolderPath); //Blocking operation // sync task
 
 //           // Extract contents of the zip file
-//           // const zip = new AdmZip(zipFilePath);
-//           // zip.extractAllTo(destinationFolderPath, true);
-
-//           fs.createReadStream(zipFilePath)
-//             // Pipe the read stream to unzipper
-//             .pipe(unzipper.Extract({ path: destinationFolderPath }))
-//             // Handle any errors that might occur during unzipping
-//             .on("error", (err) => {
-//               console.error("Error unzipping file:", err);
-//             })
-//             // Once unzipping is complete, log a success message
-//             .on("finish", () => {
-//               console.log("File unzipped successfully");
-//             });
-
-//           console.log("fifth");
+//           const zip = new AdmZip(zipFilePath);
+//           zip.extractAllTo(destinationFolderPath, true);
 
 //           const allDirectories = getAllDirectories(destinationFolderPath);
 //           // console.log("All directories:", allDirectories);
@@ -118,7 +94,6 @@ const upload = multer({ storage: storage }).fields([
 //             const worksheet = workbook.Sheets[sheetName];
 //             const data = XLSX.utils.sheet_to_json(worksheet, {
 //               raw: true,
-//               defval: "",
 //             });
 
 //             const updatedJson = data.map((obj) => {
@@ -132,8 +107,7 @@ const upload = multer({ storage: storage }).fields([
 //               obj[image] = `${pathDir}/` + `${filename}`;
 //             });
 
-//             // console.log(updatedJson[0])
-//             // console.log(updatedJson[1])
+//             // console.log(updatedJson)
 
 //             const csvData = XLSX.utils.json_to_sheet(updatedJson);
 
@@ -158,6 +132,115 @@ const upload = multer({ storage: storage }).fields([
 //     });
 //   });
 // };
+
+console.log("object");
+
+// const uploadPromise = async (req, res, next, id, imageColName) => {
+//   try {
+//     await new Promise((resolve, reject) => {
+//       upload(req, res, async function (err) {
+//         if (err) {
+//           console.error("Error uploading files:", err);
+//           return reject("Error uploading files");
+//         }
+
+//         try {
+//           const { csvFile, zipFile } = req.files;
+
+//           // Update database with file names
+//           const createdFile = await Files.create({
+//             csvFile: csvFile[0].filename,
+//             zipFile: zipFile[0].filename,
+//             templeteId: id,
+//           });
+
+//           const filePath = path.join(
+//             __dirname,
+//             "../../csvFile",
+//             csvFile[0].filename
+//           );
+//           const zipFilePath = path.join(
+//             __dirname,
+//             "../../zipFile",
+//             zipFile[0].filename
+//           );
+//           const destinationFolderPath = path.join(
+//             __dirname,
+//             "../../extractedFiles",
+//             zipFile[0].filename.replace(".zip", "")
+//           );
+
+//           // Ensure destination folder exists
+//           if (!fs.existsSync(destinationFolderPath)) {
+//             try {
+//               fs.mkdirSync(destinationFolderPath, { recursive: true });
+//             } catch (error) {
+//               console.error("Error creating destination folder:", error);
+//               throw error;
+//             }
+//           }
+
+//           fs.createReadStream(zipFilePath)
+//             .pipe(unzipper.Extract({ path: destinationFolderPath }))
+//             .on("error", (err) => {
+//               console.error("Error unzipping file:", err);
+//               reject(err);
+//             })
+//             .on("finish", async () => {
+//               console.log("File unzipped successfully");
+//             });
+
+//           const allDirectories = getAllDirectories(destinationFolderPath);
+//           const pathDir = `${zipFile[0].filename.replace(
+//             ".zip",
+//             ""
+//           )}/${allDirectories.join("/")}`;
+
+//           if (fs.existsSync(filePath)) {
+//             const workbook = XLSX.readFile(filePath);
+//             const sheetName = workbook.SheetNames[0];
+//             const worksheet = workbook.Sheets[sheetName];
+//             const data = XLSX.utils.sheet_to_json(worksheet, {
+//               raw: true,
+//               defval: "",
+//             });
+
+//             const updatedJson = data.map((obj) => obj);
+
+//             const image = imageColName.replaceAll('"', "");
+//             updatedJson.forEach((obj) => {
+//               const imagePath = obj[image];
+//               const filename = path.basename(imagePath);
+//               obj[image] = `${pathDir}/${filename}`;
+//             });
+
+//             const csvData = XLSX.utils.json_to_sheet(updatedJson);
+
+//             fs.unlinkSync(filePath);
+//             XLSX.writeFile(
+//               { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
+//               filePath
+//             );
+
+//             res.status(200).json({ fileId: createdFile.id });
+//             console.log("File Uploaded Successfully");
+//             resolve("File Uploaded Successfully");
+//           } else {
+//             res.status(404).json({ error: "CSV File not found" });
+//           }
+//         } catch (error) {
+//           console.error("Error updating database:", error);
+//           return res.status(500).send(error);
+//         }
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Error handling upload:", error);
+//     return res.status(500).send(error);
+//   }
+// };
+
+console.log("object");
 
 const uploadPromise = async (req, res, next, id, imageColName) => {
   try {
@@ -204,54 +287,75 @@ const uploadPromise = async (req, res, next, id, imageColName) => {
             }
           }
 
-          fs.createReadStream(zipFilePath)
-            .pipe(unzipper.Extract({ path: destinationFolderPath }))
-            .on("error", (err) => {
-              console.error("Error unzipping file:", err);
-              reject(err);
-            })
-            .on("finish", () => {
-              console.log("File unzipped successfully");
-            });
+          const extractStream = unzipper.Parse();
+          extractStream.on("entry", (entry) => {
+            const fileName = entry.path;
+            const destinationPath = path.join(destinationFolderPath, fileName);
 
-          const allDirectories = getAllDirectories(destinationFolderPath);
-          const pathDir = `${zipFile[0].filename.replace(
-            ".zip",
-            ""
-          )}/${allDirectories.join("/")}`;
+            // Ensure parent directories exist before writing files
+            const parentDir = path.dirname(destinationPath);
+            if (!fs.existsSync(parentDir)) {
+              fs.mkdirSync(parentDir, { recursive: true });
+            }
 
-          if (fs.existsSync(filePath)) {
-            const workbook = XLSX.readFile(filePath);
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const data = XLSX.utils.sheet_to_json(worksheet, {
-              raw: true,
-              defval: "",
-            });
+            if (fileName.endsWith("/")) {
+              // Create directories
+              fs.mkdirSync(destinationPath, { recursive: true });
+            } else {
+              // Extract files
+              entry.pipe(fs.createWriteStream(destinationPath));
+            }
+          });
 
-            const updatedJson = data.map((obj) => obj);
+          extractStream.on("error", (err) => {
+            console.error("Error unzipping file:", err);
+            reject(err);
+          });
 
-            const image = imageColName.replaceAll('"', "");
-            updatedJson.forEach((obj) => {
-              const imagePath = obj[image];
-              const filename = path.basename(imagePath);
-              obj[image] = `${pathDir}/${filename}`;
-            });
+          extractStream.on("finish", async () => {
+            console.log("File unzipped successfully");
 
-            const csvData = XLSX.utils.json_to_sheet(updatedJson);
+            const allDirectories = getAllDirectories(destinationFolderPath);
+            const pathDir = `${zipFile[0].filename.replace(
+              ".zip",
+              ""
+            )}/${allDirectories.join("/")}`;
 
-            fs.unlinkSync(filePath);
-            XLSX.writeFile(
-              { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
-              filePath
-            );
+            if (fs.existsSync(filePath)) {
+              const workbook = XLSX.readFile(filePath);
+              const sheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[sheetName];
+              const data = XLSX.utils.sheet_to_json(worksheet, {
+                raw: true,
+                defval: "",
+              });
 
-            res.status(200).json({ fileId: createdFile.id });
-            console.log("File Uploaded Successfully");
-            resolve("File Uploaded Successfully");
-          } else {
-            res.status(404).json({ error: "CSV File not found" });
-          }
+              const updatedJson = data.map((obj) => obj);
+
+              const image = imageColName.replaceAll('"', "");
+              updatedJson.forEach((obj) => {
+                const imagePath = obj[image];
+                const filename = path.basename(imagePath);
+                obj[image] = `${pathDir}/${filename}`;
+              });
+
+              const csvData = XLSX.utils.json_to_sheet(updatedJson);
+
+              fs.unlinkSync(filePath);
+              XLSX.writeFile(
+                { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
+                filePath
+              );
+
+              res.status(200).json({ fileId: createdFile.id });
+              console.log("File Uploaded Successfully");
+              resolve("File Uploaded Successfully");
+            } else {
+              res.status(404).json({ error: "CSV File not found" });
+            }
+          });
+
+          fs.createReadStream(zipFilePath).pipe(extractStream);
         } catch (error) {
           console.error("Error updating database:", error);
           return res.status(500).send(error);
