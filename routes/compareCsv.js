@@ -7,6 +7,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const { userData, saveData } = require("../controllers/CompareCsv/userCsvData");
 const assignTask = require("../controllers/CompareCsv/assignTask");
 const assignedTask = require("../controllers/CompareCsv/assignedTask");
+const errorFile =require("../controllers/CompareCsv/errorFile")
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.get("/compareAssigned/:taskId", authMiddleware, userData);
 router.post("/saveAnswer/:taskId", authMiddleware, saveData);
 router.post("/assign", authMiddleware, assignTask);
 router.get("/assignedTasks",authMiddleware,assignedTask)
+router.get("/download_error_file/:assignId",authMiddleware,errorFile)
 
 module.exports = router;

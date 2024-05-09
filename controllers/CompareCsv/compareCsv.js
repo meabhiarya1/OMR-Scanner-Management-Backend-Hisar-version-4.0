@@ -51,7 +51,9 @@ const compareCsv = async (req, res) => {
                                     "FILE_1_DATA": val1,
                                     "FILE_2_DATA": val2,
                                     "IMAGE_NAME": imgName,
-                                    "CORRECTED" :[]
+                                    "CORRECTED": [],
+                                    "CORRECTED BY": "",
+                                    "PRIMARY KEY": primaryKey
                                 }
                                 diff.push(obj);
                             }
@@ -74,7 +76,7 @@ const compareCsv = async (req, res) => {
                                     "FILE_1_DATA": val1,
                                     "FILE_2_DATA": val2,
                                     "IMAGE_NAME": imgName,
-                                    "CORRECTED" :[]
+                                    "CORRECTED": []
                                 }
                                 diff.push(obj);
                             }
@@ -84,7 +86,7 @@ const compareCsv = async (req, res) => {
             }
 
         }
-    
+
         const csvData = parse(diff);
         // const csvData = parse(arr)
         const correctedCsv = parse(f1);

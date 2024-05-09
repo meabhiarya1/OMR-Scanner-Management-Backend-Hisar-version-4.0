@@ -91,48 +91,11 @@ exports.saveData = async (req, res) => {
         task;
       task.currentIndex = +currentIndexValue;
       await task.save();
-      console.log(+currentIndexValue - 1);
-      // // Read the original CSV file
-      // const originalCSVContent = fs.readFileSync(errorFilePath, "utf8");
-
-      // // Parse CSV content to JSON or manipulate it directly
-      // const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
-      // const errorFile = errorJsonFile[currentIndexValue - 1];
-
-      // // Update the necessary fields
-      // errorFile["CORRECTED"] = [
-      //   ...errorFile["CORRECTED"],
-      //   { [column_name]: corrected_value },
-      // ];
-
-      // // Convert JSON back to CSV format
-      // const updatedCSVContent = convertJSONToCSV(errorJsonFile);
-
-      // // Write the updated content back to the original file
-      // fs.writeFileSync(errorFilePath, updatedCSVContent, "utf8");
-
-      // const correctedCsvJsonFile = await readCSVAndConvertToJSON(
-      //   correctedCsvFilePath
-      // );
-      // for (let i = 0; i < correctedCsvJsonFile.length; i++) {
-      //   if (correctedCsvJsonFile[i][primary_key] === primary_key) {
-      //     correctedCsvJsonFile[i][column_name] = corrected_value;
-      //     correctedCsvJsonFile[i] = {
-      //       ...correctedCsvJsonFile[i],
-      //       CORRECTED_BY: "GAURAV",
-      //       "CORRECTION COLUMN": [column_name],
-      //     };
-      //     break;
-      //   }
-      // }
-      // // Convert JSON back to CSV format
-      // const updatedCorrectedCSVContent = convertJSONToCSV(correctedCsvJsonFile);
-      // fs.writeFileSync(correctedCsvFilePath, updatedCorrectedCSVContent, "utf8");
-      // const ErrorCSVContent = await fs.readFileSync(errorFilePath, { encoding: 'utf8' });
-
+      const name = req.user.userName;
       // Parse CSV content to JSON
       const errorJsonFile = await readCSVAndConvertToJSON(errorFilePath);
       const errorFile = errorJsonFile[currentIndexValue - 1];
+      errorFile["CORRECTED BY"] = name;
       const parsedFile = JSON.parse(errorFile.CORRECTED)
       if (parsedFile.length === 0) {
         parsedFile.push({ [column_name]: corrected_value });

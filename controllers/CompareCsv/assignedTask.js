@@ -9,7 +9,7 @@ const assignedTask = async (req, res) => {
 
     const mappedAssignedData = await Promise.all(
       assignData.map(async (data) => {
-        const { userId, templeteId, max, min, taskStatus, moduleType } = data;
+        const { id, userId, templeteId, max, min, taskStatus, moduleType } = data;
         const user = await User.findOne({ where: { id: userId } });
         const template = await Template.findOne({ where: { id: templeteId } });
         return {
@@ -19,11 +19,10 @@ const assignedTask = async (req, res) => {
           max,
           min,
           taskStatus,
+          id
         };
       })
     );
-
-    console.log(mappedAssignedData);
     res
       .status(200)
       .send({
