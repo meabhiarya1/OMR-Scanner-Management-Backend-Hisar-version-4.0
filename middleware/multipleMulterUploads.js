@@ -29,7 +29,7 @@ const upload = multer({
 const uploadCsv = async (req, res, next) => {
     const userPermissions = req.permissions
 
-    if (!userPermissions.csvCompare) {
+    if (!userPermissions.comparecsv) {
         return res.status(500).json({ message: "you dont have access for performing this action" })
     }
 
