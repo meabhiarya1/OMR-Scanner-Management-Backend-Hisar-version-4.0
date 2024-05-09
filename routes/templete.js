@@ -32,7 +32,7 @@ router.post("/data", authMiddleware, handleData);
 router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
 router.post("/assign/user", authMiddleware, assignUser);
 router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
-router.post("/duplicate/data", duplicateRemoval);
-router.post("/delete/duplicate", deleteDuplicateData);
+router.post("/duplicate/data", authMiddleware, duplicateRemoval);
+router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
 
 module.exports = router;
