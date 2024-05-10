@@ -57,7 +57,7 @@ const duplicateRemoval = async (req, res, next) => {
     );
 
     if (duplicateValues.length === 0) {
-      return res.status(404).json({ message: "No Duplicates Found" });
+      return res.status(200).json({ message: "No Duplicates Found" });
     }
 
     // Create an array of duplicate rows with their original data and index

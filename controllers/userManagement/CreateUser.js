@@ -17,22 +17,30 @@ const createUser = async (req, res) => {
 
   try {
     const userExist = await User.findOne({ where: { email } });
-    if (userExist) {
-      return res.status(422).json({ error: "Email already exists" });
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 12); // Hash the password
+    const mobileExist = await User.findOne({ where: { mobile } });
+    const userNameExist = await User.findOne({ where: { userName } });
+    if(userNameExist){
+      return res.status(500).json( "Username already exists" );
+    }
+    else if(mobileExist){
+      return res.status(500).json( "Mobile no. already exists" );
+    }else if (userExist) {
+      return res.status(500).json( "Email already exists" );  
+    }
+    else {
+      const hashedPassword = await bcrypt.hash(password, 12);
       const newUser = await User.create({
         userName,
         mobile,
         email,
-        password: hashedPassword, // Set the hashed password
+        password: hashedPassword, 
         role,
         permissions: parsedPermissions,
       });
-      res.status(201).json({ message: "User created successfully", newUser });
+     return res.status(201).json({ message: "User created successfully", newUser });
     }
   } catch (err) {
-    res.status(400).json({ message: err.message });
+   return res.status(400).json({ message: err.message });
   }
 };
 module.exports = createUser;
