@@ -8,7 +8,8 @@ const { userData, saveData } = require("../controllers/CompareCsv/userCsvData");
 const assignTask = require("../controllers/CompareCsv/assignTask");
 const assignedTask = require("../controllers/CompareCsv/assignedTask");
 const errorFile = require("../controllers/CompareCsv/errorFile");
-const submitTask = require("../controllers/CompareCsv/submitTask")
+const submitTask = require("../controllers/CompareCsv/submitTask");
+const blank = require("../controllers/CompareCsv/blank")
 
 const router = express.Router();
 
@@ -19,6 +20,8 @@ router.post("/saveAnswer/:taskId", authMiddleware, saveData);
 router.post("/assign", authMiddleware, assignTask);
 router.get("/assignedTasks", authMiddleware, assignedTask)
 router.get("/download_error_file/:assignId", authMiddleware, errorFile);
-router.get("/submitTask/:taskId", authMiddleware,submitTask)
+router.get("/submitTask/:taskId", authMiddleware, submitTask);
+router.post("/mult_error", authMiddleware,multerUpload, blank);
+
 
 module.exports = router;

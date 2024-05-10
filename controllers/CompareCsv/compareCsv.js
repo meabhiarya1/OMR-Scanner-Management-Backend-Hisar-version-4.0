@@ -8,7 +8,7 @@ const compareCsv = async (req, res) => {
     console.log("entered");
     try {
         // Access other form data parameters
-        const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName } = req.body;
+        const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName, formFeilds } = req.body;
         const { omrImages } = req.uploadedFiles;
         const firstCSVFile = req.uploadedFiles.firstInputCsvFile
         const secondCSVFile = req.uploadedFiles.secondInputCsvFile
@@ -18,34 +18,36 @@ const compareCsv = async (req, res) => {
         const f2 = await csvToJson(secondFilePath)
 
         const diff = [];
-        // const arr = f1.map((item, index) => {
-        //     const imagePathParts = item["Image Path"].split('\\'); // Split the path by backslashes
-        //     const fileName = imagePathParts.pop(); // Remove the file name from the array
-        //     const number = parseInt(fileName.split('.')[0]); // Extract the number from the file name
-        //     const incrementedNumber =index+1; // Increment the number by the index
 
-        //     // Construct the new file path with the incremented number
-        //     const newPath = imagePathParts.concat([`${incrementedNumber.toString().padStart(3, '0')}.jpg`]).join('\\');
 
-        //     // Update the "Image Path" property of the item with the new path
-        //     return { ...item, "Image Path": newPath };
-        // });
+
 
         for (let i = 0; i < f1.length; i++) {
             for (let j = 0; j < f2.length; j++) {
                 const pkLength = f1[i][primaryKey].length;
                 const str = " ".repeat(pkLength);
-
                 if (f1[i][primaryKey] === f2[j][primaryKey] && f1[i][primaryKey] !== str && f2[i][primaryKey] !== str) {
                     for (let [key, value] of Object.entries(f1[i])) {
-                        if (value !== f2[j][key]) {
-                            const val1 = value;
-                            const val2 = f2[j][key];
-                            const imgPathArr = f1[i][imageColName]?.split("\\");
-                            const imgName = imgPathArr[imgPathArr.length - 1]
-
+                        const val1 = value;
+                        const val2 = f2[j][key];
+                        const imgPathArr = f1[i][imageColName]?.split("\\");
+                        const imgName = imgPathArr[imgPathArr.length - 1]
+                        if (val1.includes("*") || val2.includes("*") || /^\s*$/.test(val1) || /^\s*$/.test(val2)) {
+                            if (!skippingKey.includes(key) && formFeilds.includes(key)) {
+                                const obj = {
+                                    "PRIMARY": ` ${f1[i][primaryKey]}`,
+                                    "COLUMN_NAME": key,
+                                    "FILE_1_DATA": val1,
+                                    "FILE_2_DATA": val2,
+                                    "IMAGE_NAME": imgName,
+                                    "CORRECTED": [],
+                                    "CORRECTED BY": "",
+                                    "PRIMARY KEY": primaryKey
+                                }
+                                diff.push(obj);
+                            }
+                        } else if (value !== f2[j][key]) {
                             if (!skippingKey.includes(key)) {
-
                                 const obj = {
                                     "PRIMARY": ` ${f1[i][primaryKey]}`,
                                     "COLUMN_NAME": key,
@@ -61,29 +63,7 @@ const compareCsv = async (req, res) => {
                         }
                     }
                 }
-                else if (f1[i][primaryKey] === str && f2[i][primaryKey] !== str && i === j) {
-                    for (let [key, value] of Object.entries(f1[i])) {
-                        if (value !== f2[j][key]) {
-                            const val1 = value;
-                            const val2 = f2[j][key];
-                            const imgPathArr = f1[i][imageColName].split("\\");
-                            const imgName = imgPathArr[imgPathArr.length - 1].substring(1);
 
-                            if (!skippingKey.includes(key)) {
-
-                                const obj = {
-                                    "PRIMARY": f1[i][primaryKey],
-                                    "COLUMN_NAME": key,
-                                    "FILE_1_DATA": val1,
-                                    "FILE_2_DATA": val2,
-                                    "IMAGE_NAME": imgName,
-                                    "CORRECTED": []
-                                }
-                                diff.push(obj);
-                            }
-                        }
-                    }
-                }
             }
 
         }
