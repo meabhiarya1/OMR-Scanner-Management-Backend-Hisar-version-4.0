@@ -21,6 +21,14 @@ const login = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
+    const userDataToSend = {
+      userName: user.userName,
+      mobile: user.mobile,
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions,
+      id: user.id
+    };
 
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -34,7 +42,7 @@ const login = async (req, res) => {
       },
       secretKey
     );
-    res.status(200).json({ message: "Login successful", token , user });
+    res.status(200).json({ message: "Login successful", token , user: userDataToSend });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

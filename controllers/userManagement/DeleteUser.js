@@ -8,7 +8,6 @@ const deleteUser = async (req, res) => {
   if (userRole !== "Admin") {
     return res.status(403).json({ message: "Only Admin can delete users" });
   }
-  console.log(authenticatedUserId,"-------")
   try {
     const user = await User.findByPk(id);
 
