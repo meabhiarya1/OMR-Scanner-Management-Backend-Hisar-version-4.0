@@ -19,6 +19,13 @@ const updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (userName && userName !== user.userName) {
+      const userNameExist = await User.findOne({ where: { userName } });
+      if (userNameExist && userNameExist.id !== id) {
+        return res.status(400).json("Username already exists");
+      }
+    }
+
     if (email && email !== user.email) {
       const emailExist = await User.findOne({ where: { email } });
       if (emailExist && emailExist.id !== id) {
