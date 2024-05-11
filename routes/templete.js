@@ -35,6 +35,6 @@ router.post("/assign/user", authMiddleware, assignUser);
 router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
 router.post("/duplicate/data", authMiddleware, duplicateFinder);
 router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
-router.post("/update/duplicatedata", editDuplicateData);
+router.post("/update/duplicatedata",editDuplicateData);
 
 module.exports = router;
