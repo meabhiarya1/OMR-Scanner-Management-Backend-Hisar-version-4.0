@@ -9,7 +9,7 @@
 
 const Sequelize = require("sequelize");
 
-const sequelize = new Sequelize("omreditor", "root", "root", {
+const sequelize = new Sequelize("omrscanner", "root", "root", {
   dialect: "mysql",
   host: "localhost",
 });

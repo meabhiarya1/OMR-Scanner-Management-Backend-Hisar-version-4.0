@@ -33,8 +33,8 @@ router.post("/data", authMiddleware, handleData);
 router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
 router.post("/assign/user", authMiddleware, assignUser);
 router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
-router.post("/duplicate/data", authMiddleware, duplicateFinder);
+router.post("/duplicate/data", duplicateFinder);
 router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
-router.post("/update/duplicatedata",editDuplicateData);
+router.post("/update/duplicatedata", editDuplicateData);
 
 module.exports = router;
