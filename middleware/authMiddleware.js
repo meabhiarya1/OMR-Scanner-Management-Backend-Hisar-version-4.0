@@ -6,8 +6,9 @@ const authMiddleware = async (req, res, next) => {
   const { token } = req.headers;
 
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized - Token Not Provided" });
-   
+    return res
+      .status(401)
+      .json({ message: "Unauthorized - Token Not Provided" });
   }
 
   try {
@@ -15,16 +16,15 @@ const authMiddleware = async (req, res, next) => {
     const user = await User.findOne({
       where: { id: decoded.userId, email: decoded.email, role: decoded.role },
     });
-
+    console.log(user.id, "------------------");
     if (!user) {
       // return res.status(500).json({ message: "user not found", status: false });
       return res.status(401).json({ message: "Unauthorized - Invalid User" });
-
     }
     req.user = user;
     req.permissions = user.permissions;
     req.role = user.role;
-    req.user = user;
+    req.userId = user.id;
     next();
   } catch (error) {
     res.status(401).json({ message: "Unauthorized - Invalid Token" });
