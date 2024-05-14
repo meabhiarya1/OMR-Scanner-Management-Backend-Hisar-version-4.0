@@ -4,8 +4,6 @@ const path = require("path");
 const Files = require("../../models/TempleteModel/files");
 
 const getCsvData = async (req, res, next) => {
-  console.log(req.body);
-
   try {
     const fileId = req.body?.taskData?.fileId;
     if (!fileId) {
@@ -55,15 +53,19 @@ const getCsvData = async (req, res, next) => {
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
 
     function isBlankOrSpecial(obj, conditions) {
-      const blankCount = conditions.Blank;
+      const blankCount = conditions.Blank || 0;
       const includeStar = conditions["*"] || false;
       const includeAllData = conditions.AllData || false;
 
       const blankAndSpaceCount = Object.values(obj).reduce(
         (count, value) => {
           if (typeof value === "string") {
-            count.blank += value.trim() === "" || value === "BLANK" ? 1 : 0;
-            count.space += value.includes(" ") ? 1 : 0;
+            if (value.trim() === "" || value === "BLANK") {
+              count.blank += 1;
+            }
+            if (value.includes(" ")) {
+              count.space += 1;
+            }
           }
           return count;
         },
@@ -73,60 +75,29 @@ const getCsvData = async (req, res, next) => {
       const totalOccurrences =
         blankAndSpaceCount.blank + blankAndSpaceCount.space;
 
-      // if (!includeAllData) {
-      //   if (includeStar && totalOccurrences >= blankCount) {
-      //     console.log("inside");
-      //     return Object.values(obj).some(
-      //       (value) =>
-      //         (typeof value === "string" && value.trim() === "") ||
-      //         value === "BLANK" ||
-      //         (typeof value === "string" && value.includes("*"))
-      //     );
-      //   } else if (!includeStar && blankCount > 0) {
-      //     return totalOccurrences >= blankCount;
-      //   } else if (includeStar && blankCount === 0) {
-      //     return Object.values(obj).some(
-      //       (value) => typeof value === "string" && value.includes("*")
-      //     );
-      //   }
-      // } else {
-      //   return Object.values(obj).some(
-      //     (value) =>
-      //       typeof value === "string" &&
-      //       (value.trim() === "" || value === "BLANK" || value.includes("*"))
-      //   );
-      // }
-
       if (includeAllData) {
         return Object.values(obj).some(
           (value) =>
             typeof value === "string" &&
             (value.trim() === "" || value === "BLANK" || value.includes("*"))
         );
-      } //success
-
-      if (includeStar && totalOccurrences >= blankCount && blankCount !== 0) {
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        return Object.values(obj).some(
-          (value) =>
-            typeof value === "string" &&
-            (value.includes("*")
-              ? true
-              : value.trim() === "" || value === "BLANK"
-              ? true
-              : false)
-        );
       }
 
-      if (includeStar && blankCount === 0) {
-        return Object.values(obj).some(
+      if (includeStar) {
+        const hasStar = Object.values(obj).some(
           (value) => typeof value === "string" && value.includes("*")
         );
-      } //success
 
-      if (!includeStar && totalOccurrences >= blankCount) {
-        return true;
-      } //success
+        if (blankCount > 0) {
+          return hasStar || totalOccurrences >= blankCount;
+        }
+
+        return hasStar;
+      }
+
+      if (blankCount > 0) {
+        return totalOccurrences >= blankCount;
+      }
 
       return false;
     }
