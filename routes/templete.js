@@ -25,7 +25,7 @@ router.get("/get/alltasks", authMiddleware, getAllTask); //admin
 router.get("/get/task/:id", authMiddleware, getTask); //user
 
 router.post("/get/templetes", authMiddleware, getTemplete);
-router.post("/get/csvdata", authMiddleware, getCsvData);
+router.post("/get/csvdata", getCsvData);
 router.post("/get/image", authMiddleware, getImage);
 router.post("/add/templete", authMiddleware, addTemplete);
 router.post("/upload/:id", authMiddleware, handleUpload); //templeteId
@@ -33,8 +33,8 @@ router.post("/data", authMiddleware, handleData);
 router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
 router.post("/assign/user", authMiddleware, assignUser);
 router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
-router.post("/duplicate/data", duplicateFinder);
+router.post("/duplicate/data", authMiddleware, duplicateFinder);
 router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
-router.post("/update/duplicatedata", editDuplicateData);
+router.post("/update/duplicatedata", authMiddleware, editDuplicateData);
 
 module.exports = router;
