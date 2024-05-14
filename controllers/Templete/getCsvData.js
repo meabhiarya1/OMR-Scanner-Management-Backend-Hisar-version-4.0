@@ -91,7 +91,6 @@ const getCsvData = async (req, res, next) => {
         if (blankCount > 0) {
           return hasStar || totalOccurrences >= blankCount;
         }
-
         return hasStar;
       }
 
@@ -102,9 +101,14 @@ const getCsvData = async (req, res, next) => {
       return false;
     }
 
-    const filteredData = minToMaxData.filter((obj) =>
-      isBlankOrSpecial(obj, conditions)
-    );
+    const filteredData = [];
+    minToMaxData.forEach((obj, index) => {
+      const conditionCheck = isBlankOrSpecial(obj, conditions);
+      if (conditionCheck) {
+        // Attach rowIndex to the object and add it to filteredData
+        filteredData.push({ ...obj, rowIndex: index });
+      }
+    });
 
     if (filteredData.length === 0) {
       return res.status(404).json({ error: "No data matching the conditions" });
