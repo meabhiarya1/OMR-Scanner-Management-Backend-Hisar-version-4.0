@@ -1,10 +1,10 @@
 const Files = require("../../models/TempleteModel/files");
 const XLSX = require("xlsx");
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 
-const duplicateRemoval = async (req, res, next) => {
-  const { colName, fileID } = req.body;
+const duplicateFinder = async (req, res, next) => {
+  const { colName, fileID, imageColumnName } = req.body;
 
   try {
     // Check if file ID is provided
@@ -23,8 +23,10 @@ const duplicateRemoval = async (req, res, next) => {
     const filePath = path.join(__dirname, "../../csvFile", filename);
 
     // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: "File not found" });
+    try {
+      await fs.access(filePath); // Check if file exists
+    } catch (err) {
+      return res.status(404).json({ error: "CSV file not found" });
     }
 
     // Read the workbook
@@ -40,16 +42,27 @@ const duplicateRemoval = async (req, res, next) => {
 
     // Find duplicates
     const duplicates = {};
-    data.forEach((row, index) => {
+    for (const [index, row] of data.entries()) {
       const value = row[colName];
-      if (value) {
-        if (duplicates[value]) {
-          duplicates[value].push({ index, row });
-        } else {
-          duplicates[value] = [{ index, row }];
+      const imagePath = row[imageColumnName];
+      const sourceFilePath = path.join(__dirname, "..", "..", "extractedFiles", imagePath);
+      
+      try {
+        await fs.access(sourceFilePath); // Check if image file exists
+        const image = await fs.readFile(sourceFilePath);
+        const base64Image = image.toString("base64");
+
+        if (value) {
+          if (duplicates[value]) {
+            duplicates[value].push({ index, row, base64Image });
+          } else {
+            duplicates[value] = [{ index, row, base64Image }];
+          }
         }
+      } catch (err) {
+        console.error("Error reading image file:", err);
       }
-    });
+    }
 
     // Filter out non-duplicate values
     const duplicateValues = Object.keys(duplicates).filter(
@@ -70,4 +83,4 @@ const duplicateRemoval = async (req, res, next) => {
   }
 };
 
-module.exports = duplicateRemoval;
+module.exports = duplicateFinder;

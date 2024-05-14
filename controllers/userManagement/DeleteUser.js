@@ -3,11 +3,11 @@ const User = require('../../models/User');
 const deleteUser = async (req, res) => {
   const { id } = req.params;
   const userRole = req.role;
-  if(userRole !== "Admin"){
-    return res.status(500).json({msg: "Only Admin can create user"});
-  }
-  console.log(id,"id")
+  const authenticatedUserId = req.id;
 
+  if (userRole !== "Admin") {
+    return res.status(403).json({ message: "Only Admin can delete users" });
+  }
   try {
     const user = await User.findByPk(id);
 
@@ -15,6 +15,9 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    if (parseInt(id) === authenticatedUserId) {
+      return res.status(403).json({ message: 'You cannot delete your own account' });
+    }
     await user.destroy();
 
     res.status(201).json({ message: 'User deleted successfully' });
