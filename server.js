@@ -12,16 +12,22 @@ const MetaData = require("./models/TempleteModel/metadata");
 const Files = require("./models/TempleteModel/files");
 const PORT = 4000;
 const upload = require("./routes/upload");
-const path = require("path")
-const bcrypt = require("bcryptjs")
+const path = require("path");
+const bcrypt = require("bcryptjs");
 //middlewares
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const imageDirectoryPath = path.join(__dirname, "../", "COMPARECSV_FILES", 'OmrImages', "Images_2024-05-04T04-38-30-972Z/005.jpg")
-app.use('/images', express.static(imageDirectoryPath));
+const imageDirectoryPath = path.join(
+  __dirname,
+  "../",
+  "COMPARECSV_FILES",
+  "OmrImages",
+  "Images_2024-05-04T04-38-30-972Z/005.jpg"
+);
+app.use("/images", express.static(imageDirectoryPath));
 //all routes
 app.use("/users", userRoutes);
 app.use(upload);
@@ -52,16 +58,22 @@ sequelize
   .sync({ force: false })
   .then(async () => {
     // Check if the admin user table exists, if not, create it
-    const adminUser = await User.findOne({ where: { role: 'admin' } });
+    const adminUser = await User.findOne({ where: { role: "admin" } });
     const hashedPassword = await bcrypt.hash("123456", 12);
     if (!adminUser) {
       await User.create({
-        userName: 'admin',
-        mobile: '1234567891',
+        userName: "admin",
+        mobile: "1234567891",
         password: hashedPassword,
-        role: 'Admin',
+        role: "Admin",
         email: "admin@gmail.com",
-        permissions: {"dataEntry": true, "comparecsv": true, "csvuploader": true, "createTemplate": true, "resultGenerator": true}
+        permissions: {
+          dataEntry: true,
+          comparecsv: true,
+          csvuploader: true,
+          createTemplate: true,
+          resultGenerator: true,
+        },
       });
     }
     // Start the server
