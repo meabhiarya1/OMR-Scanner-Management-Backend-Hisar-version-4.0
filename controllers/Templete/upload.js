@@ -332,6 +332,13 @@ const uploadPromise = async (req, res, next, id, imageColName) => {
 
               const updatedJson = data.map((obj) => obj);
 
+              // Check if imageColName exists in the JSON data
+              if (!updatedJson[0].hasOwnProperty(imageColName)) {
+                return res
+                  .status(400)
+                  .json({ error: "Image column name not found" });
+              }
+
               const image = imageColName.replaceAll('"', "");
               updatedJson.forEach((obj) => {
                 const imagePath = obj[image];

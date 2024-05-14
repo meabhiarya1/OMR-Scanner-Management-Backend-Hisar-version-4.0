@@ -8,7 +8,7 @@ const getHeaderData = (req, res, next) => {
   if (userRole != "Admin") {
     return res
       .status(500)
-      .json({ message: "you dont have access for performing this action" });
+      .json({ message: "You don't have access for performing this action" });
   }
 
   // console.log(req.params.id); /* want fileid in params */
@@ -29,7 +29,7 @@ const getHeaderData = (req, res, next) => {
         const worksheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(worksheet, {
           raw: true,
-          defval: ""
+          defval: "",
         });
         if (data[0] == undefined || data[0] == null) {
           return res
@@ -38,6 +38,7 @@ const getHeaderData = (req, res, next) => {
         }
         // console.log(data[0])
         // console.log(Object.keys(data[0]));
+        
         res.status(200).json(Object.keys(data[0]));
       } else {
         res.status(404).json({ error: "File not found on given filepath" });

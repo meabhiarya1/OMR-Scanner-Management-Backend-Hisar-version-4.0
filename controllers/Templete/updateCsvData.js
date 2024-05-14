@@ -41,7 +41,7 @@ const updateCsvData = async (req, res, next) => {
     // Respond with success message
     res.status(200).json({ message: "File Updated Successfully" });
   } catch (error) {
-    console.error("Error updating CSV file:", error);
+    console.error("Error Updating CSV file:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
