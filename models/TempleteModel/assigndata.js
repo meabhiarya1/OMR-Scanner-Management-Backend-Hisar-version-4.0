@@ -37,9 +37,22 @@ const Assigndata = sequelize.define("assigndata", {
     defaultValue: false,
   },
 
-  currentIndex: {
+  allDataIndex: {
     type: Sequelize.STRING,
   },
+
+  multDataIndex: {
+    type: Sequelize.STRING,
+  },
+
+  blankDataIndex: {
+    type: Sequelize.STRING,
+  },
+
+  multAndBlankDataIndex: {
+    type: Sequelize.STRING,
+  },
+
   moduleType: {
     type: Sequelize.STRING,
     allowNull: false

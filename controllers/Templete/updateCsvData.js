@@ -6,7 +6,8 @@ const path = require("path");
 const updateCsvData = async (req, res, next) => {
   const { data, index } = req.body;
   const fileId = req.params.id;
-
+  delete data.rowIndex;
+  // console.log(data)
   try {
     // Retrieve the original file data from the database
     const fileData = await Files.findOne({ where: { id: fileId } });
@@ -24,7 +25,6 @@ const updateCsvData = async (req, res, next) => {
 
     // Convert the worksheet to an array of rows
     const csvData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
     // Update the specific row in the array
     csvData[index] = Object.values(data);
 
