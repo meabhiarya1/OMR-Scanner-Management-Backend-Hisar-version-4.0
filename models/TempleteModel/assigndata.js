@@ -37,35 +37,19 @@ const Assigndata = sequelize.define("assigndata", {
     defaultValue: false,
   },
 
-  allDataIndex: {
-    type: Sequelize.STRING,
-  },
-
-  multDataIndex: {
-    type: Sequelize.STRING,
-  },
-
-  blankDataIndex: {
-    type: Sequelize.STRING,
-  },
-
-  multAndBlankDataIndex: {
-    type: Sequelize.STRING,
-  },
-
   moduleType: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
   },
   errorFilePath: {
     type: Sequelize.STRING,
   },
   correctedCsvFilePath: {
-    type: Sequelize.STRING
+    type: Sequelize.STRING,
   },
-  imageDirectoryPath :{
-    type: Sequelize.STRING
-  }
+  imageDirectoryPath: {
+    type: Sequelize.STRING,
+  },
 });
 
 module.exports = Assigndata;

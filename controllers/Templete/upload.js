@@ -346,6 +346,8 @@ const uploadPromise = async (req, res, next, id, imageColName) => {
                 obj[image] = `${pathDir}/${filename}`;
               });
 
+              // console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>",updatedJson)
+
               const csvData = XLSX.utils.json_to_sheet(updatedJson);
 
               fs.unlinkSync(filePath);

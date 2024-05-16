@@ -1,6 +1,7 @@
 const fs = require("fs").promises;
 const path = require("path");
 const Assigndata = require("../../models/TempleteModel/assigndata");
+const RowIndexData = require("../../models/TempleteModel/rowIndexData");
 
 const getImage = async (req, res, next) => {
   const userPermission = req.permissions;
@@ -9,18 +10,39 @@ const getImage = async (req, res, next) => {
   }
 
   try {
-    const { imageName, currentIndex, id } = req.body;
-    // console.log(">>>>>>>>>>>>>>>>", imageName, currentIndex, id);
+    const { imageName, id, rowIndex, colName } = req.body;
+
+    const colNameAndRowIndex = {
+      [colName]: rowIndex,
+    };
+
     if (!imageName) {
       return res.status(400).json({ error: "ImageName is Missing" });
     }
-    const assigndataInstance = await Assigndata.findByPk(id);
+    const assigndataInstance = await Assigndata.findOne({
+      where: { id: id },
+      include: {
+        model: RowIndexData,
+      },
+    });
 
     if (!assigndataInstance) {
       return res.status(400).json({ error: "CurrentIndex mismatched with ID" });
     }
-    assigndataInstance.currentIndex = currentIndex;
-    await assigndataInstance.save();
+
+    // Find the existing row
+    const rowdataInstance = await RowIndexData.findOne({
+      where: { assigndatumId: id },
+    });
+    // console.log(">>>>>>>>>>>>>>>>>",rowdataInstance)
+
+    if (rowdataInstance) {
+      // If the row already exists, update the specific column value
+      await rowdataInstance.update(colNameAndRowIndex);
+    } else {
+      // If the row doesn't exist, return an error
+      return res.status(404).json({ error: "Rowdata instance not found" });
+    }
 
     const sourceFilePath = path.join(
       __dirname,
@@ -38,7 +60,7 @@ const getImage = async (req, res, next) => {
       .catch(() => false);
 
     // console.log(sourceFileExists, "----------------------");
-    
+
     if (!sourceFileExists) {
       return res.status(404).json({ error: "File not found" });
     }
@@ -89,7 +111,7 @@ const getImage = async (req, res, next) => {
     const image = await fs.readFile(sourceFilePath);
     const base64Image = image.toString("base64");
 
-    res.status(200).json({ base64Image });
+    res.status(200).json({ base64Image, id: rowdataInstance.id });
   } catch (err) {
     // Handle errors
     console.error("Error:", err);

@@ -14,6 +14,8 @@ const PORT = 4000;
 const upload = require("./routes/upload");
 const path = require("path");
 const bcrypt = require("bcryptjs");
+const Assigndata = require("./models/TempleteModel/assigndata");
+const RowIndexData = require("./models/TempleteModel/rowIndexData");
 //middlewares
 app.use(cors());
 app.use(express.json());
@@ -38,6 +40,8 @@ Templete.hasMany(MetaData);
 MetaData.belongsTo(Templete);
 Templete.hasMany(Files);
 Files.belongsTo(Templete);
+Assigndata.hasMany(RowIndexData);
+RowIndexData.belongsTo(Assigndata);
 
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);

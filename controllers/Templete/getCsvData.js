@@ -2,6 +2,8 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const Files = require("../../models/TempleteModel/files");
+const RowIndexData = require("../../models/TempleteModel/rowIndexData");
+// const Assigndata = require("../../models/TempleteModel/assigndata");
 
 const getCsvData = async (req, res, next) => {
   try {
@@ -10,7 +12,34 @@ const getCsvData = async (req, res, next) => {
       return res.status(400).json({ error: "File ID not provided" });
     }
 
-    const fileData = await Files.findOne({ where: { id: fileId } });
+    const fileData = await Files.findOne({
+      where: { id: fileId },
+    });
+
+    const rowIndexdata = await RowIndexData.findOne({
+      where: { assigndatumId: req.body.taskData.id },
+    });
+
+    let newRowIndexdata; // Declaring the variable outside the if block to ensure its scope
+
+    if (!rowIndexdata) {
+      // If rowIndexData is falsey, it means no entry was found, so we create a new one
+      try {
+        newRowIndexdata = await RowIndexData.create({
+          assigndatumId: req.body.taskData.id,
+          // Add other properties you need to create here
+        });
+        // Handle success
+        // console.log("New RowIndexData created:", newRowIndexdata);
+      } catch (error) {
+        // Handle error
+        // console.error("Error creating RowIndexData:", error);
+        // You can also throw the error to pass it to the calling function for further handling
+        throw error;
+      }
+    }
+
+    // console.log(">>>>>>>>>>>>>>>>>>>>", rowIndexdata);
     if (!fileData) {
       return res.status(404).json({ error: "File not found" });
     }
@@ -84,9 +113,11 @@ const getCsvData = async (req, res, next) => {
       }
 
       if (includeStar) {
+        console.log(obj)
         const hasStar = Object.values(obj).some(
           (value) => typeof value === "string" && value.includes("*")
         );
+        console.log(hasStar)
 
         if (blankCount > 0) {
           return hasStar || totalOccurrences >= blankCount;
@@ -116,7 +147,10 @@ const getCsvData = async (req, res, next) => {
 
     filteredData.unshift(jsonData[0]);
 
-    res.status(200).json(filteredData);
+    res.status(200).json({
+      filteredData,
+      rowIndexdata: rowIndexdata === null ? newRowIndexdata : rowIndexdata,
+    });
   } catch (error) {
     console.error("Error handling data:", error);
     res.status(500).json({ error: "Internal server error" });

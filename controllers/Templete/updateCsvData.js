@@ -4,10 +4,10 @@ const fs = require("fs");
 const path = require("path");
 
 const updateCsvData = async (req, res, next) => {
-  const { data, index } = req.body;
+  const { data, index, updatedColumn } = req.body;
   const fileId = req.params.id;
   delete data.rowIndex;
-  // console.log(data)
+  const { userName, email } = req.user;
   try {
     // Retrieve the original file data from the database
     const fileData = await Files.findOne({ where: { id: fileId } });
@@ -25,8 +25,31 @@ const updateCsvData = async (req, res, next) => {
 
     // Convert the worksheet to an array of rows
     const csvData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+    // Find the index of the column with the heading "User Details" and "Updated Details"
+    let userDetailsIndex = csvData[0].indexOf("User Details");
+    let updatedDetailsIndex = csvData[0].indexOf("Updated Details");
+
+    // If "User Details" column doesn't exist, add it to the header
+    if (userDetailsIndex === -1) {
+      csvData[0].push("User Details");
+      userDetailsIndex = csvData[0].length - 1;
+    }
+
+    // If "Updated Details" column doesn't exist, add it to the header
+    if (updatedDetailsIndex === -1) {
+      csvData[0].push("Updated Details");
+      updatedDetailsIndex = csvData[0].length - 1;
+    }
+
     // Update the specific row in the array
     csvData[index] = Object.values(data);
+
+    // Update the specific row in the array with userName and email
+    csvData[index][userDetailsIndex] = `${userName}: ${email}`;
+    csvData[index][updatedDetailsIndex] = `${Object.keys(updatedColumn)}`;
+
+    // console.log(csvData[index]);
 
     // Create a new worksheet with the updated data
     const updatedWorksheet = XLSX.utils.aoa_to_sheet(csvData);
@@ -37,7 +60,6 @@ const updateCsvData = async (req, res, next) => {
 
     // Write the updated workbook to the file
     XLSX.writeFile(updatedWorkbook, filePath);
-
     // Respond with success message
     res.status(200).json({ message: "File Updated Successfully" });
   } catch (error) {
