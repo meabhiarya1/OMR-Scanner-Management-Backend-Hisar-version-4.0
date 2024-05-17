@@ -51,7 +51,15 @@ const updateCsvData = async (req, res, next) => {
       updatedDetailsIndex = csvData[0].length - 1;
     }
 
-    console.log(">>>>>>>>>>>>>>>>>", [index + minIndex]);
+     // Initialize "User Details" and "Updated Details" columns with "No change" if it's the first time the file is created
+     for (let i = 1; i < csvData.length; i++) {
+      if (csvData[i][userDetailsIndex] === undefined) {
+        csvData[i][userDetailsIndex] = "No change";
+      }
+      if (csvData[i][updatedDetailsIndex] === undefined) {
+        csvData[i][updatedDetailsIndex] = "No change";
+      }
+    }
 
     // Update the specific row in the array
     csvData[index + minIndex - 1] = Object.values(data);
