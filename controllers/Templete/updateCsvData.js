@@ -1,4 +1,5 @@
 const Files = require("../../models/TempleteModel/files");
+const Assigndata = require("../../models/TempleteModel/assigndata");
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
@@ -14,6 +15,14 @@ const updateCsvData = async (req, res, next) => {
     if (!fileData) {
       return res.status(404).json({ error: "File not found" });
     }
+
+    const assignData = await Assigndata.findOne({
+      where: { userId: req.userId },
+    });
+
+    const { min, max } = assignData;
+
+    const minIndex = parseInt(min);
 
     const fileName = fileData.csvFile;
     const filePath = path.join(__dirname, "../../csvFile", fileName);
@@ -42,12 +51,16 @@ const updateCsvData = async (req, res, next) => {
       updatedDetailsIndex = csvData[0].length - 1;
     }
 
+    console.log(">>>>>>>>>>>>>>>>>", [index + minIndex]);
+
     // Update the specific row in the array
-    csvData[index] = Object.values(data);
+    csvData[index + minIndex - 1] = Object.values(data);
 
     // Update the specific row in the array with userName and email
-    csvData[index][userDetailsIndex] = `${userName}: ${email}`;
-    csvData[index][updatedDetailsIndex] = `${Object.keys(updatedColumn)}`;
+    csvData[index + minIndex - 1][userDetailsIndex] = `${userName}: ${email}`;
+    csvData[index + minIndex - 1][updatedDetailsIndex] = `${Object.keys(
+      updatedColumn
+    )}`;
 
     // console.log(csvData[index]);
 
