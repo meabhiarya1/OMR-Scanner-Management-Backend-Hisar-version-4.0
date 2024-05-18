@@ -240,7 +240,7 @@ console.log("object");
 //   }
 // };
 
-console.log("object");
+// console.log("object");
 
 const uploadPromise = async (req, res, next, id, imageColName) => {
   try {

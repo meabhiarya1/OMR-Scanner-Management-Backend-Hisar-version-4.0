@@ -33,7 +33,7 @@ const duplicateFinder = async (req, res, next) => {
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-
+    
     // Convert worksheet to JSON
     const data = XLSX.utils.sheet_to_json(worksheet, {
       raw: true,

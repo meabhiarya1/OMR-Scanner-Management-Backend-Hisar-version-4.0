@@ -30,7 +30,7 @@ const editDuplicateData = async (req, res, next) => {
     let data = XLSX.utils.sheet_to_json(worksheet, {
       raw: true,
       defval: "",
-    });
+    }); 
 
     // Overwriting the data at the provided index with the rowData
     if (index !== undefined && index >= 0 && index < data.length) {

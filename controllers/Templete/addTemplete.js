@@ -7,7 +7,7 @@ const addTemplete = async (req, res, next) => {
   const userRole = req.role;
 
   if (userRole !== "Admin") {
-    return res.status(500).json({ message: "Only Admin can create user" });
+    return res.status(500).json({ message: "Only Admin can form this action" });
   }
 
   try {
