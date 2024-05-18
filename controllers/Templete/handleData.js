@@ -23,7 +23,7 @@ const handleData = async (req, res, next) => {
       if (!fileData.csvFile) {
         return res.status(404).json({ error: "File not exists" });
       }
-      const filename = fileData.csvFile;
+      const filename = fileData?.csvFile;
       // console.log(filename);
       const filePath = path.join(__dirname, "../../csvFile", filename);
 
