@@ -37,6 +37,10 @@ const MetaData = sequelize.define("templetedata", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  pageNo: {
+    type: Sequelize.INTEGER,
+    allowNull:false
+  }
 });
 
 module.exports = MetaData;

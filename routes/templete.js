@@ -16,6 +16,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const duplicateFinder = require("../controllers/Templete/duplicateFinder");
 const deleteDuplicateData = require("../controllers/Templete/deleteDuplicateData");
 const editDuplicateData = require("../controllers/Templete/editDuplicateData");
+const addTestTemplete = require("../controllers/Templete/addTestTemplate");
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.get("/get/task/:id", authMiddleware, getTask); //user
 router.post("/get/templetes", authMiddleware, getTemplete);
 router.post("/get/csvdata", getCsvData);
 router.post("/get/image", authMiddleware, getImage);
+// router.post("/add/templete", addTestTemplete);
 router.post("/add/templete", authMiddleware, addTemplete);
 router.post("/upload/:id", authMiddleware, handleUpload); //templeteId
 router.post("/data", authMiddleware, handleData);
