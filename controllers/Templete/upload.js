@@ -242,7 +242,7 @@ console.log("object");
 
 // console.log("object");
 
-const uploadPromise = async (req, res, next, id, imageColName) => {
+const uploadPromise = async (req, res, next, id, imageColNames) => {
   try {
     await new Promise((resolve, reject) => {
       upload(req, res, async function (err) {
@@ -330,23 +330,39 @@ const uploadPromise = async (req, res, next, id, imageColName) => {
                 defval: "",
               });
 
+              const colNames = imageColNames.split(",");
               const updatedJson = data.map((obj) => obj);
 
-              // Check if imageColName exists in the JSON data
-              if (!updatedJson[0].hasOwnProperty(imageColName)) {
-                return res
-                  .status(400)
-                  .json({ error: "Image column name not found" });
+              // Check if all column names exist in the JSON data
+              const missingCols = colNames.filter(
+                (colName) => !updatedJson[0].hasOwnProperty(colName)
+              );
+
+              if (missingCols.length > 0) {
+                return res.status(400).json({
+                  error: `Image column name(s) not found: ${missingCols.join(
+                    ", "
+                  )}`,
+                });
               }
 
-              const image = imageColName.replaceAll('"', "");
-              updatedJson.forEach((obj) => {
-                const imagePath = obj[image];
-                const filename = path.basename(imagePath);
-                obj[image] = `${pathDir}/${filename}`;
-              });
-
+              // const image = imageColName.replaceAll('"', "");
+              // updatedJson.forEach((obj) => {
+              //   const imagePath = obj[image];
+              //   const filename = path.basename(imagePath);
+              //   obj[image] = `${pathDir}/${filename}`;
+              // });
               // console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>",updatedJson)
+
+              // Process each column name and update the corresponding values in the JSON data
+              colNames.forEach((colName) => {
+                const column = colName.replaceAll('"', ""); // Remove any extra quotes from the column name
+                updatedJson.forEach((obj) => {
+                  const imagePath = obj[column];
+                  const filename = path.basename(imagePath);
+                  obj[column] = `${pathDir}/${filename}`;
+                });
+              });
 
               const csvData = XLSX.utils.json_to_sheet(updatedJson);
 
@@ -386,7 +402,7 @@ const handleUpload = async (req, res, next) => {
       .json({ message: "You don't have access for performing this action" });
   }
   try {
-    await uploadPromise(req, res, next, req.params.id, req.query.imageColName);
+    await uploadPromise(req, res, next, req.params.id, req.query.imageNames);
     console.log("Files Uploaded successfully");
   } catch (error) {
     console.error("Error handling upload:", error);

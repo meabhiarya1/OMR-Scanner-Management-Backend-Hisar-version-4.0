@@ -2,11 +2,10 @@ const Templete = require("../../models/TempleteModel/templete");
 const MetaData = require("../../models/TempleteModel/metadata");
 
 const addTemplete = async (req, res, next) => {
-
   // const { templateData, metaData } = req.body.data;
-  const { templateData, metaData } = req.body;
+  const { templateData, metaData } = req.body.data;
   const userRole = req.role;
-  console.log(templateData, metaData,"--------------")
+  // console.log(metaData, "--------------");
 
   if (userRole !== "Admin") {
     return res.status(500).json({ message: "Only Admin can form this action" });
@@ -16,9 +15,8 @@ const addTemplete = async (req, res, next) => {
     const templeteResult = await Templete.create({
       name: templateData.name,
       TempleteType: "Data Entry",
-      pageCount: templateData.pageCount
-    }); 
-
+      pageCount: templateData.pageCount,
+    });
 
     if (!templeteResult) {
       throw new Error("Failed to create template");
