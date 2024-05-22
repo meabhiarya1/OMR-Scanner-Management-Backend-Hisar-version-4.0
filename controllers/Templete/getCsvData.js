@@ -5,6 +5,19 @@ const Files = require("../../models/TempleteModel/files");
 const RowIndexData = require("../../models/TempleteModel/rowIndexData");
 // const Assigndata = require("../../models/TempleteModel/assigndata");
 
+// Utility function to convert scientific notation to normal digits
+const convertScientificToNormal = (value) => {
+  if (
+    typeof value === "string" &&
+    /^[0-9]+\.?[0-9]*e[+-]?[0-9]+$/i.test(value)
+  ) {
+    return Number(value)
+      .toFixed(10)
+      .replace(/\.?0+$/, ""); // Adjust precision as needed
+  }
+  return value;
+};
+
 const getCsvData = async (req, res, next) => {
   try {
     const fileId = req.body?.taskData?.fileId;
@@ -65,7 +78,17 @@ const getCsvData = async (req, res, next) => {
     const minIndex = parseInt(min);
     const maxIndex = parseInt(max);
 
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+      defval: "",
+
+      // Preprocess each row to convert scientific notation in the specified column
+      transform: (row) => {
+        if (row[colName]) {
+          row[colName] = convertScientificToNormal(row[colName]);
+        }
+        return row;
+      },
+    });
 
     if (
       isNaN(minIndex) ||
@@ -113,11 +136,11 @@ const getCsvData = async (req, res, next) => {
       }
 
       if (includeStar) {
-        console.log(obj)
+        console.log(obj);
         const hasStar = Object.values(obj).some(
           (value) => typeof value === "string" && value.includes("*")
         );
-        console.log(hasStar)
+        console.log(hasStar);
 
         if (blankCount > 0) {
           return hasStar || totalOccurrences >= blankCount;

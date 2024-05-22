@@ -3,6 +3,19 @@ const XLSX = require("xlsx");
 const fs = require("fs").promises;
 const path = require("path");
 
+// Utility function to convert scientific notation to normal digits
+const convertScientificToNormal = (value) => {
+  if (
+    typeof value === "string" &&
+    /^[0-9]+\.?[0-9]*e[+-]?[0-9]+$/i.test(value)
+  ) {
+    return Number(value)
+      .toFixed(10)
+      .replace(/\.?0+$/, ""); // Adjust precision as needed
+  }
+  return value;
+};
+
 const duplicateFinder = async (req, res, next) => {
   const { colName, fileID, imageColumnName } = req.body;
 
@@ -33,11 +46,19 @@ const duplicateFinder = async (req, res, next) => {
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    
+
     // Convert worksheet to JSON
     const data = XLSX.utils.sheet_to_json(worksheet, {
       raw: true,
       defval: "",
+
+      // Preprocess each row to convert scientific notation in the specified column
+      transform: (row) => {
+        if (row[colName]) {
+          row[colName] = convertScientificToNormal(row[colName]);
+        }
+        return row;
+      }
     });
 
     // Find duplicates
@@ -45,8 +66,14 @@ const duplicateFinder = async (req, res, next) => {
     for (const [index, row] of data.entries()) {
       const value = row[colName];
       const imagePath = row[imageColumnName];
-      const sourceFilePath = path.join(__dirname, "..", "..", "extractedFiles", imagePath);
-      
+      const sourceFilePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "extractedFiles",
+        imagePath
+      );
+
       try {
         await fs.access(sourceFilePath); // Check if image file exists
         const image = await fs.readFile(sourceFilePath);
