@@ -19,7 +19,7 @@ const Templete = sequelize.define("templetes", {
   },
   pageCount: {
     type: Sequelize.INTEGER,
-    allowNull:false
+    allowNull: false,
   }
 });
 

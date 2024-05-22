@@ -10,15 +10,28 @@ const getImage = async (req, res, next) => {
   }
 
   try {
-    const { imageName, id, rowIndex, colName } = req.body;
+    const { imageNameArray, id, rowIndex, colName } = req.body;
 
     const colNameAndRowIndex = {
       [colName]: rowIndex,
     };
 
-    if (!imageName) {
-      return res.status(400).json({ error: "ImageName is Missing" });
+    if (
+      !imageNameArray ||
+      !Array.isArray(imageNameArray) ||
+      imageNameArray.length === 0
+    ) {
+      return res
+        .status(400)
+        .json({ error: "ImageNameArray is missing or empty" });
     }
+
+    // console.log(">>>>>>>>>>>>",imageNameArray)
+
+    // if (!imageName) {
+    //   return res.status(400).json({ error: "ImageName is Missing" });
+    // }
+
     const assigndataInstance = await Assigndata.findOne({
       where: { id: id },
       include: {
@@ -44,26 +57,54 @@ const getImage = async (req, res, next) => {
       return res.status(404).json({ error: "Rowdata instance not found" });
     }
 
-    const sourceFilePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "extractedFiles",
-      imageName
-    );
+    const arrayOfImages = [];
+
+    for (const imageName of imageNameArray) {
+      if (!imageName) {
+        return res.status(400).json({ error: "ImageName is missing" });
+      }
+
+      const sourceFilePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "extractedFiles",
+        imageName
+      );
+
+      try {
+        await fs.access(sourceFilePath); // Check if the file exists
+
+        const image = await fs.readFile(sourceFilePath); // Read the file
+        const base64Image = image.toString("base64"); // Convert to Base64
+
+        arrayOfImages.push({ base64Image });
+      } catch (error) {
+        // If the file doesn't exist or any other error occurs, handle it
+        return res.status(404).json({ error: `File not found: ${imageName}` });
+      }
+    }
+
+    // const sourceFilePath = path.join(
+    //   __dirname,
+    //   "..",
+    //   "..",
+    //   "extractedFiles",
+    //   imageName
+    // );
 
     // console.log(sourceFilePath, "<<<<<<<<<<<<<<<<<<");
 
-    const sourceFileExists = await fs
-      .access(sourceFilePath)
-      .then(() => true)
-      .catch(() => false);
+    // const sourceFileExists = await fs
+    //   .access(sourceFilePath)
+    //   .then(() => true)
+    //   .catch(() => false);
 
     // console.log(sourceFileExists, "----------------------");
 
-    if (!sourceFileExists) {
-      return res.status(404).json({ error: "File not found" });
-    }
+    // if (!sourceFileExists) {
+    //   return res.status(404).json({ error: "File not found" });
+    // }
 
     // Check if source file exists
     // const sourceFileExists = await fs
@@ -108,10 +149,10 @@ const getImage = async (req, res, next) => {
     // console.log(sourceFilePath);
     // return;
 
-    const image = await fs.readFile(sourceFilePath);
-    const base64Image = image.toString("base64");
+    // const image = await fs.readFile(sourceFilePath);
+    // const base64Image = image.toString("base64");
 
-    res.status(200).json({ base64Image, id: rowdataInstance.id });
+    res.status(200).json({ arrayOfImages, id: rowdataInstance.id });
   } catch (err) {
     // Handle errors
     console.error("Error:", err);

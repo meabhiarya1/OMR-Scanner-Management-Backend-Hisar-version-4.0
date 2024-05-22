@@ -11,6 +11,13 @@ const addTemplete = async (req, res, next) => {
     return res.status(500).json({ message: "Only Admin can form this action" });
   }
 
+  // Validate templateData
+  // if (!templateData.name || !templateData.pageCount) {
+  //   return res
+  //     .status(400)
+  //     .json({ message: "Template name and page count are required" });
+  // } 
+
   try {
     const templeteResult = await Templete.create({
       name: templateData.name,
