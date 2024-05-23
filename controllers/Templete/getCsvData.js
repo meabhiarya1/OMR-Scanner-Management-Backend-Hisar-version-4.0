@@ -1,23 +1,40 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
+const csv = require("csv-parser");
+const { Parser } = require("json2csv");
 const Files = require("../../models/TempleteModel/files");
 const RowIndexData = require("../../models/TempleteModel/rowIndexData");
 // const Assigndata = require("../../models/TempleteModel/assigndata");
 
-// Utility function to convert scientific notation to normal digits
-const convertScientificToNormal = (value) => {
-  if (
-    typeof value === "string" &&
-    /^[0-9]+\.?[0-9]*e[+-]?[0-9]+$/i.test(value)
-  ) {
-    return Number(value)
-      .toFixed(10)
-      .replace(/\.?0+$/, ""); // Adjust precision as needed
+function convertJSONToCSV(jsonData) {
+  try {
+    const parser = new Parser();
+    const csvData = parser.parse(jsonData);
+    return csvData;
+  } catch (error) {
+    console.error("Error converting JSON to CSV:", error);
+    return null;
   }
-  return value;
-};
+}
+function readCSVAndConvertToJSON(filePath) {
+  return new Promise((resolve, reject) => {
+    const jsonArray = [];
 
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on("data", (row) => {
+        jsonArray.push(row);
+      })
+      .on("end", () => {
+        console.log("CSV file successfully processed");
+        resolve(jsonArray);
+      })
+      .on("error", (error) => {
+        reject(error);
+      });
+  });
+}
 const getCsvData = async (req, res, next) => {
   try {
     const fileId = req.body?.taskData?.fileId;
@@ -63,33 +80,29 @@ const getCsvData = async (req, res, next) => {
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: "File not found" });
     }
-
-    let workbook, worksheet;
-    try {
-      workbook = XLSX.readFile(filePath);
-      const sheetName = workbook.SheetNames[0];
-      worksheet = workbook.Sheets[sheetName];
-    } catch (readError) {
-      console.error("Error reading CSV file:", readError);
-      return res.status(500).json({ error: "Error reading CSV file" });
-    }
+    const jsonData = await readCSVAndConvertToJSON(filePath);
+    console.log(jsonData)
+    // return;
+    // let workbook, worksheet;
+    // try {
+    //   workbook = XLSX.readFile(filePath);
+    //   const sheetName = workbook.SheetNames[0];
+    //   worksheet = workbook.Sheets[sheetName];
+    // } catch (readError) {
+    //   console.error("Error reading CSV file:", readError);
+    //   return res.status(500).json({ error: "Error reading CSV file" });
+    // }
 
     const { min, max, conditions } = req.body?.taskData || {};
     const minIndex = parseInt(min);
     const maxIndex = parseInt(max);
 
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-      defval: "",
-
-      // Preprocess each row to convert scientific notation in the specified column
-      transform: (row) => {
-        if (row[colName]) {
-          row[colName] = convertScientificToNormal(row[colName]);
-        }
-        return row;
-      },
-    });
-
+    // const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+    //   defval: "",
+    //   // header: 1,
+    // });
+    // console.log(jsonData);
+    // return
     if (
       isNaN(minIndex) ||
       isNaN(maxIndex) ||
@@ -156,6 +169,7 @@ const getCsvData = async (req, res, next) => {
     }
 
     const filteredData = [];
+
     minToMaxData.forEach((obj, index) => {
       const conditionCheck = isBlankOrSpecial(obj, conditions);
       if (conditionCheck) {
@@ -169,6 +183,8 @@ const getCsvData = async (req, res, next) => {
     }
 
     filteredData.unshift(jsonData[0]);
+
+    // console.log(filteredData[3])
 
     res.status(200).json({
       filteredData,

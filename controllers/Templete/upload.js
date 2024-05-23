@@ -6,6 +6,7 @@ const fs = require("fs");
 const unzipper = require("unzipper");
 const AdmZip = require("adm-zip");
 const getAllDirectories = require("../../services/directoryFinder");
+const { Parser } = require("json2csv");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -31,217 +32,16 @@ const upload = multer({ storage: storage }).fields([
   { name: "zipFile" },
 ]);
 
-// const uploadPromise = (req, res, next, id, imageColName) => {
-//   // console.log(imageColName);
-//   return new Promise((resolve, reject) => {
-//     upload(req, res, async function (err) {
-//       if (err) {
-//         console.error("Error uploading files:", err);
-//         return reject("Error uploading files");
-//       }
-//       try {
-//         // Update database with file names
-//         const createdFile = await Files.create({
-//           csvFile: req.files.csvFile[0].filename,
-//           zipFile: req.files.zipFile[0].filename,
-//           templeteId: id,
-//         });
-
-//         const filePath = path.join(
-//           __dirname,
-//           "../../csvFile",
-//           req.files.csvFile[0].filename
-//         );
-
-//         const zipFilePath = path.join(
-//           __dirname,
-//           "../../zipFile",
-//           req.files.zipFile[0].filename
-//         );
-
-//         if (fs.existsSync(zipFilePath)) {
-//           const extractedFilesFolderPath = path.join(
-//             __dirname,
-//             "../../extractedFiles"
-//           );
-//           if (!fs.existsSync(extractedFilesFolderPath)) {
-//             fs.mkdirSync(extractedFilesFolderPath);
-//           }
-//           const destinationFolderPath = path.join(
-//             __dirname,
-//             "../../extractedFiles",
-//             req.files.zipFile[0].filename.replace(".zip", "")
-//           );
-
-//           // Create a folder for zip file
-//           fs.mkdirSync(destinationFolderPath); //Blocking operation // sync task
-
-//           // Extract contents of the zip file
-//           const zip = new AdmZip(zipFilePath);
-//           zip.extractAllTo(destinationFolderPath, true);
-
-//           const allDirectories = getAllDirectories(destinationFolderPath);
-//           // console.log("All directories:", allDirectories);
-//           const pathDir =
-//             req.files.zipFile[0].filename.replace(".zip", "") +
-//             "/" +
-//             allDirectories.join("/");
-
-//           // Process CSV file
-//           if (fs.existsSync(filePath)) {
-//             const workbook = XLSX.readFile(filePath); //Non Blocking operation // async task
-//             const sheetName = workbook.SheetNames[0];
-//             const worksheet = workbook.Sheets[sheetName];
-//             const data = XLSX.utils.sheet_to_json(worksheet, {
-//               raw: true,
-//             });
-
-//             const updatedJson = data.map((obj) => {
-//               return obj;
-//             });
-
-//             const image = imageColName.replaceAll('"', "");
-//             updatedJson.forEach((obj) => {
-//               const imagePath = obj[image];
-//               const filename = path.basename(imagePath);
-//               obj[image] = `${pathDir}/` + `${filename}`;
-//             });
-
-//             // console.log(updatedJson)
-
-//             const csvData = XLSX.utils.json_to_sheet(updatedJson);
-
-//             fs.unlinkSync(filePath);
-//             XLSX.writeFile(
-//               { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
-//               filePath
-//             );
-//             res.status(200).json({ fileId: createdFile.id });
-//             console.log("File Uploaded Successfully");
-//             resolve("File Uploaded Successfully");
-//           } else {
-//             res.status(404).json({ error: "CSV File not found" });
-//           }
-//         } else {
-//           res.status(404).json({ error: "Zip file not found" });
-//         }
-//       } catch (error) {
-//         console.error("Error updating database:", error);
-//         reject("Error updating database");
-//       }
-//     });
-//   });
-// };
-
-console.log("object");
-
-// const uploadPromise = async (req, res, next, id, imageColName) => {
-//   try {
-//     await new Promise((resolve, reject) => {
-//       upload(req, res, async function (err) {
-//         if (err) {
-//           console.error("Error uploading files:", err);
-//           return reject("Error uploading files");
-//         }
-
-//         try {
-//           const { csvFile, zipFile } = req.files;
-
-//           // Update database with file names
-//           const createdFile = await Files.create({
-//             csvFile: csvFile[0].filename,
-//             zipFile: zipFile[0].filename,
-//             templeteId: id,
-//           });
-
-//           const filePath = path.join(
-//             __dirname,
-//             "../../csvFile",
-//             csvFile[0].filename
-//           );
-//           const zipFilePath = path.join(
-//             __dirname,
-//             "../../zipFile",
-//             zipFile[0].filename
-//           );
-//           const destinationFolderPath = path.join(
-//             __dirname,
-//             "../../extractedFiles",
-//             zipFile[0].filename.replace(".zip", "")
-//           );
-
-//           // Ensure destination folder exists
-//           if (!fs.existsSync(destinationFolderPath)) {
-//             try {
-//               fs.mkdirSync(destinationFolderPath, { recursive: true });
-//             } catch (error) {
-//               console.error("Error creating destination folder:", error);
-//               throw error;
-//             }
-//           }
-
-//           fs.createReadStream(zipFilePath)
-//             .pipe(unzipper.Extract({ path: destinationFolderPath }))
-//             .on("error", (err) => {
-//               console.error("Error unzipping file:", err);
-//               reject(err);
-//             })
-//             .on("finish", async () => {
-//               console.log("File unzipped successfully");
-//             });
-
-//           const allDirectories = getAllDirectories(destinationFolderPath);
-//           const pathDir = `${zipFile[0].filename.replace(
-//             ".zip",
-//             ""
-//           )}/${allDirectories.join("/")}`;
-
-//           if (fs.existsSync(filePath)) {
-//             const workbook = XLSX.readFile(filePath);
-//             const sheetName = workbook.SheetNames[0];
-//             const worksheet = workbook.Sheets[sheetName];
-//             const data = XLSX.utils.sheet_to_json(worksheet, {
-//               raw: true,
-//               defval: "",
-//             });
-
-//             const updatedJson = data.map((obj) => obj);
-
-//             const image = imageColName.replaceAll('"', "");
-//             updatedJson.forEach((obj) => {
-//               const imagePath = obj[image];
-//               const filename = path.basename(imagePath);
-//               obj[image] = `${pathDir}/${filename}`;
-//             });
-
-//             const csvData = XLSX.utils.json_to_sheet(updatedJson);
-
-//             fs.unlinkSync(filePath);
-//             XLSX.writeFile(
-//               { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
-//               filePath
-//             );
-
-//             res.status(200).json({ fileId: createdFile.id });
-//             console.log("File Uploaded Successfully");
-//             resolve("File Uploaded Successfully");
-//           } else {
-//             res.status(404).json({ error: "CSV File not found" });
-//           }
-//         } catch (error) {
-//           console.error("Error updating database:", error);
-//           return res.status(500).send(error);
-//         }
-//       });
-//     });
-//   } catch (error) {
-//     console.error("Error handling upload:", error);
-//     return res.status(500).send(error);
-//   }
-// };
-
-// console.log("object");
-
+function convertJSONToCSV(jsonData) {
+  try {
+    const parser = new Parser();
+    const csvData = parser.parse(jsonData);
+    return csvData;
+  } catch (error) {
+    console.error("Error converting JSON to CSV:", error);
+    return null;
+  }
+}
 const uploadPromise = async (req, res, next, id, imageColNames) => {
   try {
     await new Promise((resolve, reject) => {
@@ -328,6 +128,7 @@ const uploadPromise = async (req, res, next, id, imageColNames) => {
               const data = XLSX.utils.sheet_to_json(worksheet, {
                 raw: true,
                 defval: "",
+                // header: 1,
               });
 
               const colNames = imageColNames.split(",");
@@ -346,14 +147,6 @@ const uploadPromise = async (req, res, next, id, imageColNames) => {
                 });
               }
 
-              // const image = imageColName.replaceAll('"', "");
-              // updatedJson.forEach((obj) => {
-              //   const imagePath = obj[image];
-              //   const filename = path.basename(imagePath);
-              //   obj[image] = `${pathDir}/${filename}`;
-              // });
-              // console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>",updatedJson)
-
               // Process each column name and update the corresponding values in the JSON data
               colNames.forEach((colName) => {
                 const column = colName.replaceAll('"', ""); // Remove any extra quotes from the column name
@@ -364,16 +157,15 @@ const uploadPromise = async (req, res, next, id, imageColNames) => {
                 });
               });
 
-              const csvData = XLSX.utils.json_to_sheet(updatedJson);
-
               fs.unlinkSync(filePath);
-              XLSX.writeFile(
-                { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
-                filePath
-              );
 
+              const updatedCSVContent = convertJSONToCSV(updatedJson);
+
+              // Write the updated content back to the original file
+              fs.writeFileSync(filePath, updatedCSVContent, {
+                encoding: "utf8",
+              });
               res.status(200).json({ fileId: createdFile.id });
-              console.log("File Uploaded Successfully");
               resolve("File Uploaded Successfully");
             } else {
               res.status(404).json({ error: "CSV File not found" });

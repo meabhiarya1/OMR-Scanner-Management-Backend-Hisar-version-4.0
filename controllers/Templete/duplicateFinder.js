@@ -1,21 +1,37 @@
 const Files = require("../../models/TempleteModel/files");
 const XLSX = require("xlsx");
 const fs = require("fs").promises;
+const fsi = require("fs");
 const path = require("path");
-
-// Utility function to convert scientific notation to normal digits
-const convertScientificToNormal = (value) => {
-  if (
-    typeof value === "string" &&
-    /^[0-9]+\.?[0-9]*e[+-]?[0-9]+$/i.test(value)
-  ) {
-    return Number(value)
-      .toFixed(10)
-      .replace(/\.?0+$/, ""); // Adjust precision as needed
+const csv = require("csv-parser");
+function convertJSONToCSV(jsonData) {
+  try {
+    const parser = new Parser();
+    const csvData = parser.parse(jsonData);
+    return csvData;
+  } catch (error) {
+    console.error("Error converting JSON to CSV:", error);
+    return null;
   }
-  return value;
-};
+}
+function readCSVAndConvertToJSON(filePath) {
+  return new Promise((resolve, reject) => {
+    const jsonArray = [];
 
+    fsi.createReadStream(filePath)
+      .pipe(csv())
+      .on("data", (row) => {
+        jsonArray.push(row);
+      })
+      .on("end", () => {
+        console.log("CSV file successfully processed");
+        resolve(jsonArray);
+      })
+      .on("error", (error) => {
+        reject(error);
+      });
+  });
+}
 const duplicateFinder = async (req, res, next) => {
   const { colName, fileID, imageColumnName } = req.body;
 
@@ -42,24 +58,45 @@ const duplicateFinder = async (req, res, next) => {
       return res.status(404).json({ error: "CSV file not found" });
     }
 
-    // Read the workbook
-    const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const data = await readCSVAndConvertToJSON(filePath);
+    // // Read the workbook
+    // const workbook = XLSX.readFile(filePath);
+    // const sheetName = workbook.SheetNames[0];
+    // const worksheet = workbook.Sheets[sheetName];
 
-    // Convert worksheet to JSON
-    const data = XLSX.utils.sheet_to_json(worksheet, {
-      raw: true,
-      defval: "",
+    // // Convert worksheet to JSON
+    // const data = XLSX.utils.sheet_to_json(worksheet, {
+    //   raw: true,
+    //   defval: "",
+    //   // header: 1,
+    // });
 
-      // Preprocess each row to convert scientific notation in the specified column
-      transform: (row) => {
-        if (row[colName]) {
-          row[colName] = convertScientificToNormal(row[colName]);
-        }
-        return row;
-      }
-    });
+    // async function readCSV(filePath) {
+    //   try {
+    //     const data = [];
+
+    //     // Read the CSV file and parse it using csv-parser
+    //     const stream = fs.createReadStream(filePath).pipe(csv({ raw: true }));
+
+    //     for await (const row of stream) {
+    //       // Process each row
+    //       data.push(row);
+    //     }
+
+    //     return data;
+    //   } catch (error) {
+    //     console.error("Error reading CSV file:", error);
+    //     throw error;
+    //   }
+    // }
+
+    // readCSV(filePath)
+    //   .then((data) => {
+    //     console.log(data[1]); // Print the second row as an example
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
 
     // Find duplicates
     const duplicates = {};
