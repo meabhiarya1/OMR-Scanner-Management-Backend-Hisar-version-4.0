@@ -1,7 +1,6 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
-const csv = require("csv-parser");
 const { Parser } = require("json2csv");
 const Files = require("../../models/TempleteModel/files");
 const RowIndexData = require("../../models/TempleteModel/rowIndexData");
@@ -17,24 +16,7 @@ function convertJSONToCSV(jsonData) {
     return null;
   }
 }
-function readCSVAndConvertToJSON(filePath) {
-  return new Promise((resolve, reject) => {
-    const jsonArray = [];
 
-    fs.createReadStream(filePath)
-      .pipe(csv())
-      .on("data", (row) => {
-        jsonArray.push(row);
-      })
-      .on("end", () => {
-        console.log("CSV file successfully processed");
-        resolve(jsonArray);
-      })
-      .on("error", (error) => {
-        reject(error);
-      });
-  });
-}
 const getCsvData = async (req, res, next) => {
   try {
     const fileId = req.body?.taskData?.fileId;
@@ -80,29 +62,26 @@ const getCsvData = async (req, res, next) => {
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: "File not found" });
     }
-    const jsonData = await readCSVAndConvertToJSON(filePath);
-    console.log(jsonData)
-    // return;
-    // let workbook, worksheet;
-    // try {
-    //   workbook = XLSX.readFile(filePath);
-    //   const sheetName = workbook.SheetNames[0];
-    //   worksheet = workbook.Sheets[sheetName];
-    // } catch (readError) {
-    //   console.error("Error reading CSV file:", readError);
-    //   return res.status(500).json({ error: "Error reading CSV file" });
-    // }
+
+    let workbook, worksheet;
+    try {
+      workbook = XLSX.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      worksheet = workbook.Sheets[sheetName];
+    } catch (readError) {
+      console.error("Error reading CSV file:", readError);
+      return res.status(500).json({ error: "Error reading CSV file" });
+    }
 
     const { min, max, conditions } = req.body?.taskData || {};
     const minIndex = parseInt(min);
     const maxIndex = parseInt(max);
 
-    // const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-    //   defval: "",
-    //   // header: 1,
-    // });
-    // console.log(jsonData);
-    // return
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+      defval: "",
+      // header: 1,
+    });
+
     if (
       isNaN(minIndex) ||
       isNaN(maxIndex) ||
@@ -116,6 +95,8 @@ const getCsvData = async (req, res, next) => {
     }
 
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
+
+    
 
     function isBlankOrSpecial(obj, conditions) {
       const blankCount = conditions.Blank || 0;
@@ -185,6 +166,7 @@ const getCsvData = async (req, res, next) => {
     filteredData.unshift(jsonData[0]);
 
     // console.log(filteredData[3])
+  
 
     res.status(200).json({
       filteredData,
