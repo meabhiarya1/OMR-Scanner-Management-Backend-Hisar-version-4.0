@@ -2,7 +2,7 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const Files = require("../../models/TempleteModel/files");
-
+const jsonToCsv = require("../../services/json_to_csv");
 const deleteDuplicateData = async (req, res, next) => {
   const { index, fileID } = req.body;
 
@@ -36,13 +36,12 @@ const deleteDuplicateData = async (req, res, next) => {
     if (index >= 0 && index < data.length) {
       data.splice(index, 1);
 
-      // Update the CSV file with the modified data
-      const csvData = XLSX.utils.json_to_sheet(data);
-      fs.unlinkSync(filePath); // Delete the original CSV file
-      XLSX.writeFile(
-        { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
-        filePath
-      );
+      const csvData = jsonToCsv(data)
+
+      fs.unlinkSync(filePath);
+      fs.writeFileSync(filePath, csvData, {
+        encoding: "utf8",
+      });
 
       return res.status(200).json({ message: "Row deleted successfully" });
     } else {

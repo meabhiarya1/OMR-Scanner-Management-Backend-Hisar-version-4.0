@@ -4,34 +4,9 @@ const fs = require("fs").promises;
 const fsi = require("fs");
 const path = require("path");
 const csv = require("csv-parser");
-function convertJSONToCSV(jsonData) {
-  try {
-    const parser = new Parser();
-    const csvData = parser.parse(jsonData);
-    return csvData;
-  } catch (error) {
-    console.error("Error converting JSON to CSV:", error);
-    return null;
-  }
-}
-function readCSVAndConvertToJSON(filePath) {
-  return new Promise((resolve, reject) => {
-    const jsonArray = [];
+const jsonToCsv = require("../../services/json_to_csv");
+const csvToJson = require("../../services/csv_to_json");
 
-    fsi.createReadStream(filePath)
-      .pipe(csv())
-      .on("data", (row) => {
-        jsonArray.push(row);
-      })
-      .on("end", () => {
-        console.log("CSV file successfully processed");
-        resolve(jsonArray);
-      })
-      .on("error", (error) => {
-        reject(error);
-      });
-  });
-}
 const duplicateFinder = async (req, res, next) => {
   const { colName, fileID, imageColumnName } = req.body;
 
@@ -58,45 +33,7 @@ const duplicateFinder = async (req, res, next) => {
       return res.status(404).json({ error: "CSV file not found" });
     }
 
-    const data = await readCSVAndConvertToJSON(filePath);
-    // // Read the workbook
-    // const workbook = XLSX.readFile(filePath);
-    // const sheetName = workbook.SheetNames[0];
-    // const worksheet = workbook.Sheets[sheetName];
-
-    // // Convert worksheet to JSON
-    // const data = XLSX.utils.sheet_to_json(worksheet, {
-    //   raw: true,
-    //   defval: "",
-    //   // header: 1,
-    // });
-
-    // async function readCSV(filePath) {
-    //   try {
-    //     const data = [];
-
-    //     // Read the CSV file and parse it using csv-parser
-    //     const stream = fs.createReadStream(filePath).pipe(csv({ raw: true }));
-
-    //     for await (const row of stream) {
-    //       // Process each row
-    //       data.push(row);
-    //     }
-
-    //     return data;
-    //   } catch (error) {
-    //     console.error("Error reading CSV file:", error);
-    //     throw error;
-    //   }
-    // }
-
-    // readCSV(filePath)
-    //   .then((data) => {
-    //     console.log(data[1]); // Print the second row as an example
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
+    const data = await csvToJson(filePath);
 
     // Find duplicates
     const duplicates = {};

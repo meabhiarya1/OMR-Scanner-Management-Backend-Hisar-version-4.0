@@ -2,6 +2,8 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const Files = require("../../models/TempleteModel/files");
+const jsonToCsv = require("../../services/json_to_csv");
+const csvToJson = require("../../services/csv_to_json");
 
 const handleData = async (req, res, next) => {
   const userRole = req.role;
@@ -59,15 +61,13 @@ const handleData = async (req, res, next) => {
         data.unshift(mergedObject);
       }
 
-      // console.log(data)
-      const csvData = XLSX.utils.json_to_sheet(data);
-      // console.log(filePath);
-      fs.unlinkSync(filePath);
 
-      XLSX.writeFile(
-        { SheetNames: [sheetName], Sheets: { [sheetName]: csvData } },
-        filePath
-      );
+      const csvData = jsonToCsv(data)
+
+      fs.unlinkSync(filePath);
+      fs.writeFileSync(filePath, csvData, {
+        encoding: "utf8",
+      });
 
       res.status(200).json("Header added successfully");
     });

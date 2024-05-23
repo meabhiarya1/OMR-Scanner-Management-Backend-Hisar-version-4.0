@@ -6,16 +6,7 @@ const Files = require("../../models/TempleteModel/files");
 const RowIndexData = require("../../models/TempleteModel/rowIndexData");
 // const Assigndata = require("../../models/TempleteModel/assigndata");
 
-function convertJSONToCSV(jsonData) {
-  try {
-    const parser = new Parser();
-    const csvData = parser.parse(jsonData);
-    return csvData;
-  } catch (error) {
-    console.error("Error converting JSON to CSV:", error);
-    return null;
-  }
-}
+
 
 const getCsvData = async (req, res, next) => {
   try {
