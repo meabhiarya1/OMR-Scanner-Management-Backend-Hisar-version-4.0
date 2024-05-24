@@ -96,28 +96,6 @@ const updateCsvData = async (req, res, next) => {
       throw new Error("Error converting updated JSON to CSV");
     }
 
-    // Update the specific row in the array
-    // csvData[index + minIndex - 1] = Object.values(data);
-
-    // Update the specific row in the array with userName and email
-    // csvData[index + minIndex - 1][userDetailsIndex] = `${userName}: ${email}`;
-    // csvData[index + minIndex - 1][updatedDetailsIndex] = `${Object.keys(
-    //   updatedColumn
-    // )}`;
-
-    // console.log(csvData[index]);
-
-    // Create a new worksheet with the updated data
-    // const updatedWorksheet = XLSX.utils.aoa_to_sheet(csvData);
-
-    // Create a new workbook and add the updated worksheet
-    // const updatedWorkbook = XLSX.utils.book_new();
-    // XLSX.utils.book_append_sheet(updatedWorkbook, updatedWorksheet, sheetName);
-
-    // fs.unlinkSync(filePath);
-
-    // const updatedCSVContent = jsonToCsv(updatedJson);
-
     // Write the updated content back to the original file
 
     fs.writeFileSync(filePath, updatedCSVContent, {
