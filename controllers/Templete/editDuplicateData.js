@@ -70,7 +70,7 @@ const editDuplicateData = async (req, res, next) => {
 
     // Update the specific row in the array with userName and email
     data[index + 1][userDetailsIndex] = `${userName}: ${email}`;
-    data[index + 1][updatedDetailsIndex] = `${Object.keys(rowData)}`; //
+    data[index + 1][updatedDetailsIndex] = `${Object.keys(updatedColumn)}`; //
 
     // Convert the updated array of rows back to JSON format
     const jsonArray = [];
