@@ -33,8 +33,8 @@ const editDuplicateData = async (req, res, next) => {
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     let data = XLSX.utils.sheet_to_json(worksheet, {
-      // raw: true,
-      // defval: "",
+      raw: true,
+      defval: "",
       header: 1,
     });
 
@@ -65,13 +65,6 @@ const editDuplicateData = async (req, res, next) => {
       }
     }
 
-    // Overwriting the data at the provided index with the rowData
-    // if (index !== undefined && index >= 0 && index < data.length) {
-    //   data[index] = Object.values(rowData);
-    // } else {
-    //   return res.status(400).json({ error: "Invalid index provided" });
-    // }
-
     // Update the specific row in the array
     data[index + 1] = Object.values(rowData);
 
@@ -98,7 +91,7 @@ const editDuplicateData = async (req, res, next) => {
       throw new Error("Error converting updated JSON to CSV");
     }
 
-    // fs.unlinkSync(filePath);
+    fs.unlinkSync(filePath);
     fs.writeFileSync(filePath, updatedCSVContent, {
       encoding: "utf8",
     });
