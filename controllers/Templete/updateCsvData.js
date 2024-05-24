@@ -13,7 +13,8 @@ const updateCsvData = async (req, res, next) => {
   }
 
   const fileId = req.params.id;
-  delete data.rowIndex;
+  delete data.rowIndex; 
+
   const { userName, email } = req.user;
   try {
     // Retrieve the original file data from the database

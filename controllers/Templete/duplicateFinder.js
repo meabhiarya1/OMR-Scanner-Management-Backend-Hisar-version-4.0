@@ -1,9 +1,7 @@
 const Files = require("../../models/TempleteModel/files");
 const XLSX = require("xlsx");
 const fs = require("fs").promises;
-const fsi = require("fs");
 const path = require("path");
-const csv = require("csv-parser");
 const jsonToCsv = require("../../services/json_to_csv");
 const csvToJson = require("../../services/csv_to_json");
 
