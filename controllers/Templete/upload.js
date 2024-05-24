@@ -7,6 +7,7 @@ const unzipper = require("unzipper");
 const AdmZip = require("adm-zip");
 const getAllDirectories = require("../../services/directoryFinder");
 const { Parser } = require("json2csv");
+const jsonToCsv = require("../../services/json_to_csv");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -32,16 +33,7 @@ const upload = multer({ storage: storage }).fields([
   { name: "zipFile" },
 ]);
 
-function convertJSONToCSV(jsonData) {
-  try {
-    const parser = new Parser();
-    const csvData = parser.parse(jsonData);
-    return csvData;
-  } catch (error) {
-    console.error("Error converting JSON to CSV:", error);
-    return null;
-  }
-}
+
 const uploadPromise = async (req, res, next, id, imageColNames) => {
   try {
     await new Promise((resolve, reject) => {
@@ -159,7 +151,7 @@ const uploadPromise = async (req, res, next, id, imageColNames) => {
 
               fs.unlinkSync(filePath);
 
-              const updatedCSVContent = convertJSONToCSV(updatedJson);
+              const updatedCSVContent = jsonToCsv(updatedJson);
 
               // Write the updated content back to the original file
               fs.writeFileSync(filePath, updatedCSVContent, {

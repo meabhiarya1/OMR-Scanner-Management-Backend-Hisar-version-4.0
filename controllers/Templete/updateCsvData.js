@@ -3,9 +3,15 @@ const Assigndata = require("../../models/TempleteModel/assigndata");
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
+const jsonToCsv = require("../../services/json_to_csv");
 
 const updateCsvData = async (req, res, next) => {
   const { data, index, updatedColumn } = req.body;
+
+  if (updatedColumn === null) {
+    return res.status(300).json({ message: "Nothing to Update" });
+  }
+
   const fileId = req.params.id;
   delete data.rowIndex;
   const { userName, email } = req.user;
@@ -51,8 +57,9 @@ const updateCsvData = async (req, res, next) => {
       updatedDetailsIndex = csvData[0].length - 1;
     }
 
-     // Initialize "User Details" and "Updated Details" columns with "No change" if it's the first time the file is created
-     for (let i = 1; i < csvData.length; i++) {
+    // Initialize "User Details" and "Updated Details" columns with "No change" if it's the first time the file is created
+
+    for (let i = 1; i < csvData.length; i++) {
       if (csvData[i][userDetailsIndex] === undefined) {
         csvData[i][userDetailsIndex] = "No change";
       }
@@ -70,17 +77,52 @@ const updateCsvData = async (req, res, next) => {
       updatedColumn
     )}`;
 
+    // Convert the updated array of rows back to JSON format
+    const jsonArray = [];
+    const headers = csvData[0];
+    for (let i = 1; i < csvData.length; i++) {
+      const row = csvData[i];
+      const rowObject = {};
+      for (let j = 0; j < headers.length; j++) {
+        rowObject[headers[j]] = row[j];
+      }
+      jsonArray.push(rowObject);
+    }
+
+    // Convert the updated JSON data back to CSV format using the jsonToCsv function
+    const updatedCSVContent = jsonToCsv(jsonArray);
+
+    if (updatedCSVContent === null) {
+      throw new Error("Error converting updated JSON to CSV");
+    }
+
+    // Update the specific row in the array
+    // csvData[index + minIndex - 1] = Object.values(data);
+
+    // Update the specific row in the array with userName and email
+    // csvData[index + minIndex - 1][userDetailsIndex] = `${userName}: ${email}`;
+    // csvData[index + minIndex - 1][updatedDetailsIndex] = `${Object.keys(
+    //   updatedColumn
+    // )}`;
+
     // console.log(csvData[index]);
 
     // Create a new worksheet with the updated data
-    const updatedWorksheet = XLSX.utils.aoa_to_sheet(csvData);
+    // const updatedWorksheet = XLSX.utils.aoa_to_sheet(csvData);
 
     // Create a new workbook and add the updated worksheet
-    const updatedWorkbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(updatedWorkbook, updatedWorksheet, sheetName);
+    // const updatedWorkbook = XLSX.utils.book_new();
+    // XLSX.utils.book_append_sheet(updatedWorkbook, updatedWorksheet, sheetName);
 
-    // Write the updated workbook to the file
-    XLSX.writeFile(updatedWorkbook, filePath);
+    // fs.unlinkSync(filePath);
+
+    // const updatedCSVContent = jsonToCsv(updatedJson);
+
+    // Write the updated content back to the original file
+
+    fs.writeFileSync(filePath, updatedCSVContent, {
+      encoding: "utf8",
+    });
     // Respond with success message
     res.status(200).json({ message: "File Updated Successfully" });
   } catch (error) {
