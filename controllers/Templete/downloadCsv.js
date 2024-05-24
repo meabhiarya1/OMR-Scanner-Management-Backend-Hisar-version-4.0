@@ -1,6 +1,8 @@
 const Files = require("../../models/TempleteModel/files");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs").promises; // Use the promises API for async/await
+const csvToJson = require("../../services/csv_to_json");
+const jsonToCsv = require("../../services/json_to_csv");
 
 const downloadCsv = async (req, res) => {
   try {
@@ -20,9 +22,20 @@ const downloadCsv = async (req, res) => {
     const filename = fileData.csvFile;
     const filePath = path.join(__dirname, "../../csvFile", filename);
 
-    if (!fs.existsSync(filePath)) {
+    try {
+      await fs.access(filePath); // Check if the file exists
+    } catch (err) {
       return res.status(404).json({ error: "File not found" });
     }
+
+    const jsonData = await csvToJson(filePath);
+
+    // Remove the first row
+    jsonData.shift();
+
+    const csvData = jsonToCsv(jsonData);
+
+    await fs.writeFile(filePath, csvData, { encoding: "utf8" });
 
     // Send the file to the client for download
     return res.download(filePath, filename, (err) => {
@@ -31,7 +44,6 @@ const downloadCsv = async (req, res) => {
         return res.status(500).json({ error: "An error occurred while processing your request" });
       }
     });
-
   } catch (error) {
     console.error("Error downloading CSV file:", error);
     return res.status(500).json({ error: "An error occurred while processing your request" });
