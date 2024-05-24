@@ -50,6 +50,9 @@ const Assigndata = sequelize.define("assigndata", {
   imageDirectoryPath: {
     type: Sequelize.STRING,
   },
+  currentIndex: {
+    type: Sequelize.INTEGER,
+  },
 });
 
 module.exports = Assigndata;

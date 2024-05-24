@@ -34,32 +34,46 @@ const duplicateFinder = async (req, res, next) => {
     const data = await csvToJson(filePath);
 
     // Find duplicates
+    const imageCol = imageColumnName.split(",");
     const duplicates = {};
+    const sourceFilePaths = [];
+    const base64Images = {};
+
     for (const [index, row] of data.entries()) {
       const value = row[colName];
-      const imagePath = row[imageColumnName];
-      const sourceFilePath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "extractedFiles",
-        imagePath
-      );
+      const rowBase64Images = [];
 
-      try {
-        await fs.access(sourceFilePath); // Check if image file exists
-        const image = await fs.readFile(sourceFilePath);
-        const base64Image = image.toString("base64");
+      for (const col of imageCol) {
+        const imagePath = row[col];
+        const sourceFilePath = path.join(
+          __dirname,
+          "..",
+          "..",
+          "extractedFiles",
+          imagePath
+        );
+        sourceFilePaths.push(sourceFilePath);
 
-        if (value) {
-          if (duplicates[value]) {
-            duplicates[value].push({ index, row, base64Image });
-          } else {
-            duplicates[value] = [{ index, row, base64Image }];
-          }
+        try {
+          await fs.access(sourceFilePath); // Check if image file exists
+          const image = await fs.readFile(sourceFilePath);
+          rowBase64Images.push(image.toString("base64"));
+        } catch (err) {
+          console.error(`Error reading image file at ${sourceFilePath}:`, err);
         }
-      } catch (err) {
-        console.error("Error reading image file:", err);
+      }
+
+      if (value) {
+        if (!base64Images[value]) {
+          base64Images[value] = [];
+        }
+        base64Images[value].push(rowBase64Images);
+
+        if (duplicates[value]) {
+          duplicates[value].push({ index, row, base64Images: rowBase64Images });
+        } else {
+          duplicates[value] = [{ index, row, base64Images: rowBase64Images }];
+        }
       }
     }
 
@@ -74,7 +88,6 @@ const duplicateFinder = async (req, res, next) => {
 
     // Create an array of duplicate rows with their original data and index
     const duplicateRows = duplicateValues.flatMap((value) => duplicates[value]);
-
     return res.status(200).json({ duplicates: duplicateRows });
   } catch (error) {
     console.error("Error finding duplicates:", error);

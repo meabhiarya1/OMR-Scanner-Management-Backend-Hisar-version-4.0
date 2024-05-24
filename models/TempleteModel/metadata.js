@@ -40,9 +40,7 @@ const MetaData = sequelize.define("templetedata", {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
-  currentIndex: {
-    type: Sequelize.INTEGER,
-  },
+  
 });
 
 module.exports = MetaData;
