@@ -13,15 +13,13 @@ const Templete = sequelize.define("templetes", {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  TempleteType :{
+  TempleteType: {
     type: Sequelize.STRING,
     allowNull: false,
   },
   pageCount: {
     type: Sequelize.INTEGER,
-    allowNull: false,
-  }
+  },
 });
 
 module.exports = Templete;
-

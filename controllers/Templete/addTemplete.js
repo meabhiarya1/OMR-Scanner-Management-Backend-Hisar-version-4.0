@@ -2,7 +2,6 @@ const Templete = require("../../models/TempleteModel/templete");
 const MetaData = require("../../models/TempleteModel/metadata");
 
 const addTemplete = async (req, res, next) => {
-  // const { templateData, metaData } = req.body.data;
   const { templateData, metaData } = req.body.data;
   const userRole = req.role;
   // console.log(metaData, "--------------");
@@ -12,11 +11,11 @@ const addTemplete = async (req, res, next) => {
   }
 
   // Validate templateData
-  // if (!templateData.name || !templateData.pageCount) {
-  //   return res
-  //     .status(400)
-  //     .json({ message: "Template name and page count are required" });
-  // } 
+  if (!templateData.name || !templateData.pageCount) {
+    return res
+      .status(400)
+      .json({ message: "Template name and page count are required" });
+  }
 
   try {
     const templeteResult = await Templete.create({

@@ -1,6 +1,5 @@
 const Sequelize = require("sequelize");
 
-
 const sequelize = require("../../utils/database");
 
 const MetaData = sequelize.define("templetedata", {
@@ -39,8 +38,11 @@ const MetaData = sequelize.define("templetedata", {
   },
   pageNo: {
     type: Sequelize.INTEGER,
-    allowNull:false
-  }
+    allowNull: false,
+  },
+  currentIndex: {
+    type: Sequelize.INTEGER,
+  },
 });
 
 module.exports = MetaData;
