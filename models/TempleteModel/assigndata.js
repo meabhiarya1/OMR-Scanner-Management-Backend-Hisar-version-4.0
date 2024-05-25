@@ -32,7 +32,12 @@ const Assigndata = sequelize.define("assigndata", {
     allowNull: false,
   },
 
-  taskStatus: {
+  blankTaskStatus: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
+
+  multTaskStatus: {
     type: Sequelize.BOOLEAN,
     defaultValue: false,
   },
