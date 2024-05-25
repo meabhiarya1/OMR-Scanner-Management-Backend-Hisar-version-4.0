@@ -6,7 +6,7 @@ const secretKey = "omrscanner";
 const getSingleUser = async (req, res) => {
   const  {token}  = req.headers;
   const user = req.user
-  console.log(user,"userdata")
+  // console.log(user,"userdata")
   try {
     // const decoded = await jwt.verify(token, secretKey);
     // const selectedAttributes = [

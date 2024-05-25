@@ -5,7 +5,7 @@ const { parse } = require('json2csv');
 
 
 const compareCsv = async (req, res) => {
-    console.log("entered");
+    // console.log("entered");
     try {
         // Access other form data parameters
         const { firstInputFileName, secondInputFileName, primaryKey, skippingKey, imageColName, formFeilds } = req.body;
@@ -121,7 +121,7 @@ const compareCsv = async (req, res) => {
 
         });
     } catch (err) {
-        console.log(err)
+        // console.log(err)
         res.status(501).send({ error: err })
     }
 }

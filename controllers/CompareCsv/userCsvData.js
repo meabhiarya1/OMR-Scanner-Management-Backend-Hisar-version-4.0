@@ -152,7 +152,7 @@ exports.saveData = async (req, res) => {
       throw new Error("Task not found.")
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     res.status(500).send({ message: "Error occured : ", err })
   }
 };

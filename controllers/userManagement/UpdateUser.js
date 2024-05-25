@@ -8,7 +8,7 @@ const updateUser = async (req, res) => {
   const { userName, mobile, role, email, password, permissions } =
     req.body.selectedUser;
   const userRole = req.role;
-  console.log(req.body.selectedUser.password, "-------password-------");
+  // console.log(req.body.selectedUser.password, "-------password-------");
   if (userRole !== "Admin") {
     return res.status(403).json({ message: "Only Admin can update user" });
   }
@@ -39,13 +39,13 @@ const updateUser = async (req, res) => {
         return res.status(400).json("Mobile number already exists");
       }
     }
-    console.log(user.password,"------user----------------")
+    // console.log(user.password,"------user----------------")
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 12);
       user.password = hashedPassword;
-      console.log(hashedPassword)
+      // console.log(hashedPassword)
     }
-    console.log(user.password,"============pasword============")
+    // console.log(user.password,"============pasword============")
     user.userName = userName || user.userName;
     user.mobile = mobile || user.mobile;
     user.email = email || user.email;

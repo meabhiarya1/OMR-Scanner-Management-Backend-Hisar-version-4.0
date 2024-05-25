@@ -25,7 +25,7 @@ const csvUpload = async (req, res) => {
                 // Remove the uploaded file
                 // fs.unlinkSync(req.file.path);
                 // Send the JSON data as response
-                console.log(jsonData)
+                // console.log(jsonData)
                 res.json(jsonData);
             });
     } catch (error) {

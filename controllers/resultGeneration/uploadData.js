@@ -9,7 +9,7 @@ const router = express.Router();
 
 exports.uploadData = (req, res, next) => {
 
-    console.log(req.body);
+    // console.log(req.body);
 
   // Initialize an empty array to store headers and data
   const data = [];
@@ -29,7 +29,7 @@ exports.uploadData = (req, res, next) => {
       data.push(row);
     })
     .on("end", () => {
-      console.log("Data extracted successfully:", data);
+      // console.log("Data extracted successfully:", data);
       res.status(200).json({ data });
     })
     .on("error", (err) => {

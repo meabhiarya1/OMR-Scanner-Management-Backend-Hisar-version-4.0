@@ -10,7 +10,7 @@ const router = express.Router();
 exports.uploadKey = (req, res, next) => {
 
   const userPermission = req.permission;
-  console.log(userPermission)
+  // console.log(userPermission)
   //   console.log(req.file);
 
   // Initialize an empty array to store headers and data

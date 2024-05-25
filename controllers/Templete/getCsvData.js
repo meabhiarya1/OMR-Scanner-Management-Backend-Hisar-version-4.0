@@ -121,11 +121,11 @@ const getCsvData = async (req, res, next) => {
       }
 
       if (includeStar) {
-        console.log(obj);
+        // console.log(obj);
         const hasStar = Object.values(obj).some(
           (value) => typeof value === "string" && value.includes("*")
         );
-        console.log(hasStar);
+        // console.log(hasStar);
 
         if (blankCount > 0) {
           return hasStar || totalOccurrences >= blankCount;

@@ -9,7 +9,8 @@ const assignedTask = async (req, res) => {
 
     const mappedAssignedData = await Promise.all(
       assignData.map(async (data) => {
-        const { id, userId, templeteId, max, min, taskStatus, moduleType } = data;
+        const { id, userId, templeteId, max, min, taskStatus, moduleType } =
+          data;
         const user = await User.findOne({ where: { id: userId } });
         const template = await Template.findOne({ where: { id: templeteId } });
         return {
@@ -19,18 +20,19 @@ const assignedTask = async (req, res) => {
           max,
           min,
           taskStatus,
-          id
+          id,
         };
       })
     );
-    res
-      .status(200)
-      .send({
-        message: " File found successfuly ",
-        assignedData: mappedAssignedData,
-      });
+    res.status(200).send({
+      message: " File found successfuly ",
+      assignedData: mappedAssignedData,
+    });
   } catch (error) {
-    console.log(error);
+    res.status(500).send({
+      message: "An error occurred while retrieving the data",
+      error: error.message,
+    });
   }
 };
 
