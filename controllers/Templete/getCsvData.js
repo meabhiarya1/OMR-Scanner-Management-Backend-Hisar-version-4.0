@@ -87,7 +87,7 @@ const getCsvData = async (req, res, next) => {
 
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
 
-    
+    //remove the imagecolumn
 
     function isBlankOrSpecial(obj, conditions) {
       const blankCount = conditions.Blank || 0;
@@ -136,7 +136,6 @@ const getCsvData = async (req, res, next) => {
       if (blankCount > 0) {
         return totalOccurrences >= blankCount;
       }
-
       return false;
     }
 
@@ -158,7 +157,6 @@ const getCsvData = async (req, res, next) => {
 
     // console.log(filteredData[3])
   
-
     res.status(200).json({
       filteredData,
       rowIndexdata: rowIndexdata === null ? newRowIndexdata : rowIndexdata,

@@ -19,7 +19,7 @@ const RowIndexData = require("./models/TempleteModel/rowIndexData");
 //middlewares
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json({ extended: false }));
+app.use(bodyParser.json({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const imageDirectoryPath = path.join(

@@ -1,5 +1,4 @@
 const Files = require("../../models/TempleteModel/files");
-const XLSX = require("xlsx");
 const fs = require("fs").promises;
 const path = require("path");
 const jsonToCsv = require("../../services/json_to_csv");
@@ -9,57 +8,44 @@ const duplicateFinder = async (req, res, next) => {
   const { colName, fileID, imageColumnName } = req.body;
 
   try {
-    // Check if file ID is provided
     if (!fileID) {
       return res.status(400).json({ error: "File ID not provided" });
     }
 
-    // Find the file data by ID
     const fileData = await Files.findByPk(fileID);
     if (!fileData || !fileData.csvFile) {
       return res.status(404).json({ error: "File not found" });
     }
 
-    // Get the file path
     const filename = fileData.csvFile;
-    const filePath = path.join(__dirname, "../../csvFile", filename);
+    const filePath = path.resolve(__dirname, "../../csvFile", filename);
 
-    // Check if file exists
     try {
-      await fs.access(filePath); // Check if file exists
+      await fs.access(filePath);
     } catch (err) {
       return res.status(404).json({ error: "CSV file not found" });
     }
 
     const data = await csvToJson(filePath);
 
-    // Find duplicates
-    const imageCol = imageColumnName.split(",");
+    const imageCols = imageColumnName.split(",");
     const duplicates = {};
-    const sourceFilePaths = [];
     const base64Images = {};
 
     for (const [index, row] of data.entries()) {
       const value = row[colName];
       const rowBase64Images = [];
 
-      for (const col of imageCol) {
+      for (const col of imageCols) {
         const imagePath = row[col];
-        const sourceFilePath = path.join(
-          __dirname,
-          "..",
-          "..",
-          "extractedFiles",
-          imagePath
-        );
-        sourceFilePaths.push(sourceFilePath);
+        const sourceFilePath = path.resolve(__dirname, "../../extractedFiles", imagePath);
 
         try {
-          await fs.access(sourceFilePath); // Check if image file exists
+          await fs.access(sourceFilePath);
           const image = await fs.readFile(sourceFilePath);
           rowBase64Images.push(image.toString("base64"));
         } catch (err) {
-          console.error(`Error reading image file at ${sourceFilePath}:`, err);
+          return res.status(404).json({ error: `Error reading image file at ${sourceFilePath}: ${err.message}` });
         }
       }
 
@@ -77,16 +63,14 @@ const duplicateFinder = async (req, res, next) => {
       }
     }
 
-    // Filter out non-duplicate values
     const duplicateValues = Object.keys(duplicates).filter(
       (value) => duplicates[value].length > 1
     );
 
     if (duplicateValues.length === 0) {
-      return res.status(404).json({ message: "No Duplicates Found" });
+      return res.status(404).json({ message: "No duplicates found" });
     }
 
-    // Create an array of duplicate rows with their original data and index
     const duplicateRows = duplicateValues.flatMap((value) => duplicates[value]);
     return res.status(200).json({ duplicates: duplicateRows });
   } catch (error) {
