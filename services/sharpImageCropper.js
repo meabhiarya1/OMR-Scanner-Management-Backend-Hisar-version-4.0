@@ -6,7 +6,7 @@ async function cropImage(base64Image, coordinates) {
   // Log the dimensions of the input image
   const image = sharp(inputBuffer);
   const metadata = await image.metadata();
-  console.log("Input image dimensions:", metadata.width, "x", metadata.height);
+  // console.log("Input image dimensions:", metadata.width, "x", metadata.height);
 
   // Crop the image
   try {

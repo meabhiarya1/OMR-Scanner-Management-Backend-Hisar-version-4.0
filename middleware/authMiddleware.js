@@ -4,7 +4,7 @@ const secretKey = "omrscanner";
 
 const authMiddleware = async (req, res, next) => {
   const { token } = req.headers;
-console.log(token,"token")
+// console.log(token,"token")
   if (!token) {
     return res
       .status(401)
@@ -16,7 +16,7 @@ console.log(token,"token")
     const user = await User.findOne({
       where: { id: decoded.userId, email: decoded.email, role: decoded.role },
     });
-    console.log(user.id, "------------------");
+    // console.log(user.id, "------------------");
     if (!user) {
       // return res.status(500).json({ message: "user not found", status: false });
       return res.status(401).json({ message: "Unauthorized - Invalid User" });

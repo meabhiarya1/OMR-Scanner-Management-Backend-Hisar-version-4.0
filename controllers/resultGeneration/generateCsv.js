@@ -41,7 +41,7 @@ const path = require("path");
 // });
 
 exports.generateCsv = (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
 //   const data = [
 //     { notAttempted: "John", wrongAnswer: 30, correctAnswer: "New York" },
   
@@ -70,7 +70,7 @@ const data=req.body.finalAnswers
     .writeRecords(data)
     .then((csvfile) => {
       console.log("CSV file has been created successfully.");
-      console.log(csvFilePath)
+      // console.log(csvFilePath)
       res.sendFile(csvFilePath);
     })
     .catch((err) => {

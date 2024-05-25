@@ -4,9 +4,8 @@ const path = require("path");
 const { Parser } = require("json2csv");
 const Files = require("../../models/TempleteModel/files");
 const RowIndexData = require("../../models/TempleteModel/rowIndexData");
+const Templete = require("../../models/TempleteModel/templete");
 // const Assigndata = require("../../models/TempleteModel/assigndata");
-
-
 
 const getCsvData = async (req, res, next) => {
   try {
@@ -17,7 +16,22 @@ const getCsvData = async (req, res, next) => {
 
     const fileData = await Files.findOne({
       where: { id: fileId },
+      include: [
+        {
+          model: Templete,
+          attributes: {
+            include: ["pageCount"], // Specify the fields to be excluded
+          },
+        },
+      ],
     });
+
+    // console.log(
+    //   fileData.templete.pageCount,
+    //   ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    // );
+
+    const extraImageColCount = fileData.templete.pageCount;
 
     const rowIndexdata = await RowIndexData.findOne({
       where: { assigndatumId: req.body.taskData.id },
@@ -85,9 +99,32 @@ const getCsvData = async (req, res, next) => {
       return res.status(400).json({ error: "Invalid min or max value" });
     }
 
-    const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
+    // const imgageColNameFinder = Object.values(jsonData[0]);
 
-    //remove the imagecolumn
+    // let imageColNameContainer = [];
+    // let count = 1;
+
+    // while (true) {
+    //   const imageName = `Image${count}`;
+    //   if (imgageColNameFinder.includes(imageName)) {
+    //     imageColNameContainer.push(imageName);
+    //     count++;
+    //   } else {
+    //     break;
+    //   }
+    // }
+
+    // // Find keys for the values in imgageColNameContainer
+    // let imageColKeyContainer = [];
+
+    // imageColNameContainer.forEach((imageName) => {
+    //   for (const [key, value] of Object.entries(jsonData[0])) {
+    //     if (value === imageName) {
+    //       imageColKeyContainer.push(key);
+    //       break; // Found the key for the current imageName, move to the next imageName
+    //     }
+    //   }
+    // });
 
     function isBlankOrSpecial(obj, conditions) {
       const blankCount = conditions.Blank || 0;
@@ -128,18 +165,20 @@ const getCsvData = async (req, res, next) => {
         // console.log(hasStar);
 
         if (blankCount > 0) {
-          return hasStar || totalOccurrences >= blankCount;
+          return hasStar || totalOccurrences >= blankCount + extraImageColCount;
         }
         return hasStar;
       }
 
       if (blankCount > 0) {
-        return totalOccurrences >= blankCount;
+        return totalOccurrences >= blankCount + extraImageColCount;
       }
       return false;
     }
 
     const filteredData = [];
+
+    const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
 
     minToMaxData.forEach((obj, index) => {
       const conditionCheck = isBlankOrSpecial(obj, conditions);
@@ -156,7 +195,7 @@ const getCsvData = async (req, res, next) => {
     filteredData.unshift(jsonData[0]);
 
     // console.log(filteredData[3])
-  
+
     res.status(200).json({
       filteredData,
       rowIndexdata: rowIndexdata === null ? newRowIndexdata : rowIndexdata,

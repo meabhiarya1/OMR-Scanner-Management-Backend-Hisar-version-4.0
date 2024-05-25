@@ -38,10 +38,13 @@ app.use(templeteRoutes);
 
 Templete.hasMany(MetaData);
 MetaData.belongsTo(Templete);
+
 Templete.hasMany(Files);
 Files.belongsTo(Templete);
+
 Assigndata.hasMany(RowIndexData);
 RowIndexData.belongsTo(Assigndata);
+
 
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);
