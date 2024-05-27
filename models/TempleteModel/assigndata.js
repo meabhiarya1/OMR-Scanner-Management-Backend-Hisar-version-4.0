@@ -42,6 +42,11 @@ const Assigndata = sequelize.define("assigndata", {
     defaultValue: false,
   },
 
+  taskStatus: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
+
   moduleType: {
     type: Sequelize.STRING,
     allowNull: false,
