@@ -13,12 +13,10 @@ const taskUpdation = async (req, res, next) => {
     }
 
     // Correct usage of update method
-    if (blankTaskStatus) {
-      await assignData.update({ blankTaskStatus: !assignData.blankTaskStatus });
-    }
-    if (multTaskStatus) {
-      await assignData.update({ multTaskStatus: !assignData.multTaskStatus });
-    } 
+    await assignData.update({
+      blankTaskStatus: blankTaskStatus,
+      multTaskStatus: multTaskStatus,
+    });
 
     return res.status(200).json({ message: "Task Completed successfully" });
   } catch (error) {
