@@ -17,6 +17,7 @@ const duplicateFinder = require("../controllers/Templete/duplicateFinder");
 const deleteDuplicateData = require("../controllers/Templete/deleteDuplicateData");
 const editDuplicateData = require("../controllers/Templete/editDuplicateData");
 const downloadCsv = require("../controllers/Templete/downloadCsv");
+const handleTemplateUpload = require("../controllers/Templete/handleTemplateUpload");
 
 const router = express.Router();
 
@@ -31,6 +32,7 @@ router.post("/get/csvdata", authMiddleware, getCsvData);
 router.post("/get/image", authMiddleware, getImage);
 router.post("/add/templete", authMiddleware, addTemplete);
 router.post("/upload/:id", authMiddleware, handleUpload); //templeteId
+router.post("/uploadimage/:id", handleTemplateUpload); //templeteId
 router.post("/data", authMiddleware, handleData);
 router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
 router.post("/assign/user", authMiddleware, assignUser);

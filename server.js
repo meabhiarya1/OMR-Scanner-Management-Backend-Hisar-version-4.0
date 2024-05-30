@@ -16,10 +16,12 @@ const path = require("path");
 const bcrypt = require("bcryptjs");
 const Assigndata = require("./models/TempleteModel/assigndata");
 const RowIndexData = require("./models/TempleteModel/rowIndexData");
+const ImageDataPath = require("./models/TempleteModel/templeteImages");
+
 //middlewares
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json({ extended: true }));
+app.use(bodyParser.json({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const imageDirectoryPath = path.join(
@@ -45,6 +47,22 @@ Files.belongsTo(Templete);
 Assigndata.hasMany(RowIndexData);
 RowIndexData.belongsTo(Assigndata);
 
+// Define associations
+Templete.hasMany(ImageDataPath, {
+  foreignKey: {
+    name: "templeteId",
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+});
+
+ImageDataPath.belongsTo(Templete, {
+  foreignKey: {
+    name: "templeteId",
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+});
 
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);
