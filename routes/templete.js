@@ -30,7 +30,7 @@ router.get("/download/csv/:id", downloadCsv); //file Id
 router.post("/get/templetes", authMiddleware, getTemplete);
 router.post("/get/csvdata", authMiddleware, getCsvData);
 router.post("/get/image", authMiddleware, getImage);
-router.post("/add/templete", authMiddleware, addTemplete);
+router.post("/add/templete", addTemplete);
 router.post("/upload/:id", authMiddleware, handleUpload); //templeteId
 router.post("/uploadimage/:id", handleTemplateUpload); //templeteId
 router.post("/data", authMiddleware, handleData);

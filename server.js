@@ -80,7 +80,7 @@ ImageDataPath.belongsTo(Templete, {
 //   });
 
 sequelize
-  .sync({ force: false })
+    .sync({ force: false })
   .then(async () => {
     // Check if the admin user table exists, if not, create it
     const adminUser = await User.findOne({ where: { role: "admin" } });
