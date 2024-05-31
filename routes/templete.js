@@ -26,7 +26,7 @@ router.get("/get/headerdata/:id", authMiddleware, getHeaderData); //fileId
 router.get("/get/alltasks", authMiddleware, getAllTask); //admin
 router.get("/get/task/:id", authMiddleware, getTask); //user
 router.get("/download/csv/:id", authMiddleware, downloadCsv); //file Id
-router.get("/edit/template/:id", editTemplateData); //template Id
+router.get("/edit/template/:id", authMiddleware, editTemplateData); //template Id
 
 router.post("/get/templetes", authMiddleware, getTemplete);
 router.post("/get/csvdata", authMiddleware, getCsvData);

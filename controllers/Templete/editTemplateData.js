@@ -7,6 +7,13 @@ const path = require("path");
 const editTemplateData = async (req, res) => {
   const templateId = req.params.id;
 
+  const userRole = req.role;
+  if (userRole != "Admin") {
+    return res
+      .status(500)
+      .json({ message: "You don't have access for performing this action" });
+  }
+
   try {
     const template = await Templete.findByPk(templateId, {
       include: [ImageData, MetaData],
