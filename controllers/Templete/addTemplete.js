@@ -59,6 +59,12 @@ const uploadPromise = (req, res) => {
 };
 
 const addTemplete = async (req, res, next) => {
+  const userRole = req.role;
+  if (userRole != "Admin") {
+    return res
+      .status(500)
+      .json({ message: "You don't have access for performing this action" });
+  }
   try {
     await uploadPromise(req, res);
 
