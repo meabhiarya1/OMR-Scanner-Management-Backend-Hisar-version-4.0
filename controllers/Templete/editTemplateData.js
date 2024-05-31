@@ -8,7 +8,8 @@ const editTemplateData = async (req, res) => {
   const templateId = req.params.id;
 
   const userRole = req.role;
-  if (userRole != "Admin") {
+  console.log(userRole);
+  if (userRole !== "Admin") {
     return res
       .status(500)
       .json({ message: "You don't have access for performing this action" });

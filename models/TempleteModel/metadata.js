@@ -3,6 +3,11 @@ const Sequelize = require("sequelize");
 const sequelize = require("../../utils/database");
 
 const MetaData = sequelize.define("templetedata", {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
 
   attribute: {
     type: Sequelize.STRING,
@@ -35,7 +40,14 @@ const MetaData = sequelize.define("templetedata", {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
-  
+  templeteId: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    references: {
+      model: "templetes", // 'Templete' refers to the table name
+      key: "id",
+    },
+  },
 });
 
 module.exports = MetaData;

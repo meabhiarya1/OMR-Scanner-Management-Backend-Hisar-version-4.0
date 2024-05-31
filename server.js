@@ -38,8 +38,24 @@ app.use(upload);
 app.use(compareCsv);
 app.use(templeteRoutes);
 
-Templete.hasMany(MetaData);
-MetaData.belongsTo(Templete);
+// Templete.hasMany(MetaData);
+// MetaData.belongsTo(Templete);
+
+Templete.hasMany(MetaData, {
+  foreignKey: {
+    name: "templeteId",
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+});
+
+MetaData.belongsTo(Templete, {
+  foreignKey: {
+    name: "templeteId",
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+});
 
 Templete.hasMany(Files);
 Files.belongsTo(Templete);

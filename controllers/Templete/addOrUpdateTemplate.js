@@ -1,20 +1,20 @@
 const Templete = require("../../models/TempleteModel/templete");
 const MetaData = require("../../models/TempleteModel/metadata");
 const multer = require("multer");
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
-const ImageDataPath = require("../../models/TempleteModel/templeteImages");
+const ImageData = require("../../models/TempleteModel/templeteImages");
 
 const baseFolder = path.join(__dirname, "../../TempleteImages");
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (!fs.existsSync(baseFolder)) {
-      fs.mkdirSync(baseFolder, { recursive: true });
+  destination: async (req, file, cb) => {
+    if (!(await fs.access(baseFolder).catch(() => false))) {
+      await fs.mkdir(baseFolder, { recursive: true });
     }
     cb(null, baseFolder);
   },
-  filename: function (req, file, cb) {
+  filename: (req, file, cb) => {
     const timestamp = Date.now();
     cb(null, `${timestamp}_${file.originalname}`);
   },
@@ -35,21 +35,19 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+  storage,
+  fileFilter,
 }).array("images", 10);
 
 const uploadPromise = (req, res) => {
   return new Promise((resolve, reject) => {
     upload(req, res, (err) => {
       if (err instanceof multer.MulterError) {
-        // Multer errors (e.g., unexpected field)
         console.error("Multer error:", err);
         return res
           .status(400)
           .json({ message: "Invalid request: " + err.message });
       } else if (err) {
-        // Other errors
         console.error("Error:", err);
         return res.status(500).json({ message: "Internal Server Error" });
       }
@@ -58,13 +56,7 @@ const uploadPromise = (req, res) => {
   });
 };
 
-const addTemplete = async (req, res, next) => {
-  const userRole = req.role;
-  if (userRole != "Admin") {
-    return res
-      .status(500)
-      .json({ message: "You don't have access for performing this action" });
-  }
+const addOrUpdateTemplate = async (req, res) => {
   try {
     await uploadPromise(req, res);
 
@@ -73,6 +65,7 @@ const addTemplete = async (req, res, next) => {
     }
 
     const { templateData, metaData } = JSON.parse(req.body.data);
+
 
     if (!templateData || !templateData.name || !templateData.pageCount) {
       return res
@@ -86,30 +79,41 @@ const addTemplete = async (req, res, next) => {
         .json({ message: "Meta data is required and should be an array" });
     }
 
-    const templeteResult = await Templete.create({
-      name: templateData.name,
-      TempleteType: "Data Entry",
-      pageCount: templateData.pageCount,
-    });
+    let template;
+    if (req.body.templateId) {
 
-    if (!templeteResult) {
-      throw new Error("Failed to create template");
+      template = await Templete.findByPk(req.body.templateId, {
+        include: [ImageData, MetaData],
+      });
+
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Update the template
+      await template.update({
+        name: templateData.name,
+        pageCount: templateData.pageCount,
+      });
+
+      // Delete existing metadata and images
+      await MetaData.destroy({ where: { templeteId: template.id } });
+      await ImageData.destroy({ where: { templeteId: template.id } });
+    } else {
+      // Create a new template
+      template = await Templete.create({
+        name: templateData.name,
+        TempleteType: "Data Entry",
+        pageCount: templateData.pageCount,
+      });
     }
 
+    // Add new metadata
     await Promise.all(
-      metaData.map(async (current, index) => {
-        await MetaData.create({
-          attribute: current.attribute,
-          coordinateX: current.coordinateX,
-          coordinateY: current.coordinateY,
-          width: current.width,
-          height: current.height,
-          fieldType: current.fieldType,
-          pageNo: current.pageNo,
-          templeteId: templeteResult.id,
-        }).catch((error) => {
-          console.error(`Error creating metadata at index ${index}:`, error);
-          throw error; // Propagate the error to the outer catch block
+      metaData.map((current) => {
+        return MetaData.create({
+          ...current,
+          templeteId: template.id,
         });
       })
     );
@@ -118,21 +122,18 @@ const addTemplete = async (req, res, next) => {
       return res.status(400).json({ message: "No images were uploaded" });
     }
 
-    const imagePaths = req.files.map((file, index) => ({
+    // Add new image paths
+    const imagePaths = req.files.map((file) => ({
       imagePath: file.filename,
-      templeteId: templeteResult.id,
+      templeteId: template.id,
     }));
+    await ImageData.bulkCreate(imagePaths);
 
-    await ImageDataPath.bulkCreate(imagePaths).catch((error) => {
-      console.error("Error creating image paths:", error);
-      throw error; // Propagate the error to the outer catch block
-    });
-
-    res.status(200).json({ message: "Created Successfully" });
+    res.status(200).json({ message: "Created or Updated Successfully" });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-module.exports = addTemplete;
+module.exports = addOrUpdateTemplate;
