@@ -44,7 +44,6 @@ Templete.hasMany(MetaData, {
     name: "templeteId",
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -53,7 +52,6 @@ MetaData.belongsTo(Templete, {
     name: "templeteId",
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -61,7 +59,6 @@ Templete.hasMany(Files, {
   foreignKey: {
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -69,7 +66,6 @@ Files.belongsTo(Templete, {
   foreignKey: {
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -77,7 +73,6 @@ Assigndata.hasMany(RowIndexData, {
   foreignKey: {
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -85,7 +80,6 @@ RowIndexData.belongsTo(Assigndata, {
   foreignKey: {
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -94,7 +88,6 @@ Templete.hasMany(ImageDataPath, {
     name: "templeteId",
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
@@ -103,7 +96,6 @@ ImageDataPath.belongsTo(Templete, {
     name: "templeteId",
     allowNull: false,
   },
-  onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 

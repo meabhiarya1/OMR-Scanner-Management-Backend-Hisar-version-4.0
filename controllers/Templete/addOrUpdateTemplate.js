@@ -64,8 +64,7 @@ const addOrUpdateTemplate = async (req, res) => {
       throw new Error("No data provided");
     }
 
-    const { templateData, metaData } = JSON.parse(req.body.data);
-
+    const { templateData, metaData, templateId } = JSON.parse(req.body.data);
 
     if (!templateData || !templateData.name || !templateData.pageCount) {
       return res
@@ -80,9 +79,8 @@ const addOrUpdateTemplate = async (req, res) => {
     }
 
     let template;
-    if (req.body.templateId) {
-
-      template = await Templete.findByPk(req.body.templateId, {
+    if (templateId) {
+      template = await Templete.findByPk(templateId, {
         include: [ImageData, MetaData],
       });
 
