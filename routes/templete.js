@@ -41,6 +41,6 @@ router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
 router.post("/duplicate/data", authMiddleware, duplicateFinder);
 router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
 router.post("/update/duplicatedata", authMiddleware, editDuplicateData);
-router.post("/delete/template", deleteTemplate); //templateId
+router.post("/delete/template/:id", deleteTemplate); //templateId
 
 module.exports = router;

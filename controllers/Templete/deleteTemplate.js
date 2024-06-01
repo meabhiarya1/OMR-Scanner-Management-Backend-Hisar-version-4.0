@@ -2,7 +2,7 @@ const Template = require("../../models/TempleteModel/templete");
 
 const deleteTemplate = async (req, res) => {
   try {
-    const templateId = req.body.templateId;
+    const templateId = req.params.id;
 
     // Find the template by primary key
     const template = await Template.findByPk(templateId);
