@@ -38,15 +38,14 @@ app.use(upload);
 app.use(compareCsv);
 app.use(templeteRoutes);
 
-// Templete.hasMany(MetaData);
-// MetaData.belongsTo(Templete);
-
+// Define associations with cascading deletes
 Templete.hasMany(MetaData, {
   foreignKey: {
     name: "templeteId",
     allowNull: false,
   },
   onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 MetaData.belongsTo(Templete, {
@@ -55,21 +54,48 @@ MetaData.belongsTo(Templete, {
     allowNull: false,
   },
   onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
-Templete.hasMany(Files);
-Files.belongsTo(Templete);
+Templete.hasMany(Files, {
+  foreignKey: {
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
-Assigndata.hasMany(RowIndexData);
-RowIndexData.belongsTo(Assigndata);
+Files.belongsTo(Templete, {
+  foreignKey: {
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
-// Define associations
+Assigndata.hasMany(RowIndexData, {
+  foreignKey: {
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+RowIndexData.belongsTo(Assigndata, {
+  foreignKey: {
+    allowNull: false,
+  },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
 Templete.hasMany(ImageDataPath, {
   foreignKey: {
     name: "templeteId",
     allowNull: false,
   },
   onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 ImageDataPath.belongsTo(Templete, {
@@ -78,6 +104,7 @@ ImageDataPath.belongsTo(Templete, {
     allowNull: false,
   },
   onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 // app.listen(PORT, () => {
@@ -96,7 +123,7 @@ ImageDataPath.belongsTo(Templete, {
 //   });
 
 sequelize
-    .sync({ force: false })
+  .sync({ force: false })
   .then(async () => {
     // Check if the admin user table exists, if not, create it
     const adminUser = await User.findOne({ where: { role: "admin" } });

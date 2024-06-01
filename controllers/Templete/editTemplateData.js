@@ -8,7 +8,7 @@ const editTemplateData = async (req, res) => {
   const templateId = req.params.id;
 
   const userRole = req.role;
-  console.log(userRole);
+  // console.log(userRole);
   if (userRole !== "Admin") {
     return res
       .status(500)
