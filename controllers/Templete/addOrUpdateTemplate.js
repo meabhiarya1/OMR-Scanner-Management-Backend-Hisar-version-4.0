@@ -57,6 +57,14 @@ const uploadPromise = (req, res) => {
 };
 
 const addOrUpdateTemplate = async (req, res) => {
+  const userRole = req.role;
+  // console.log(userRole, "-----------");
+  if (userRole != "Admin") {
+    return res
+      .status(500)
+      .json({ message: "You don't have access for performing this action" });
+  }
+
   try {
     await uploadPromise(req, res);
 
@@ -97,7 +105,7 @@ const addOrUpdateTemplate = async (req, res) => {
       // Delete existing metadata and images
       await MetaData.destroy({ where: { templeteId: template.id } });
       await ImageData.destroy({ where: { templeteId: template.id } });
-    } else {
+    } else if (templateId === undefined) {
       // Create a new template
       template = await Templete.create({
         name: templateData.name,

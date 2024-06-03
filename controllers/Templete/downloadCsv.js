@@ -5,6 +5,7 @@ const csvToJson = require("../../services/csv_to_json");
 const jsonToCsv = require("../../services/json_to_csv");
 
 const downloadCsv = async (req, res) => {
+
   try {
     const fileId = req.params.id;
     if (!fileId) {
@@ -37,7 +38,24 @@ const downloadCsv = async (req, res) => {
     // Remove the first row
     jsonData.shift();
 
-    const csvData = jsonToCsv(jsonData);
+    // Columns to remove
+    const columnsToRemove = [
+      "User Details",
+      "Previous Values",
+      "Updated Values",
+      "Updated Col. Name",
+    ];
+
+    // Filter out the specified columns
+    const filteredJsonData = jsonData.map((row) => {
+      columnsToRemove.forEach((col) => {
+        delete row[col];
+      });
+      return row;
+    });
+
+    // Convert filtered JSON data back to CSV
+    const csvData = jsonToCsv(filteredJsonData);
 
     // Create a filename with the current date and time
     const timestamp = new Date().toISOString().replace(/[-:.]/g, "");

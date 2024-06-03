@@ -2,14 +2,11 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const Files = require("../../models/TempleteModel/files");
+const UpdatedData = require("../../models/TempleteModel/updatedData");
 const jsonToCsv = require("../../services/json_to_csv");
 
 const editDuplicateData = async (req, res, next) => {
   const { index, fileID, rowData, updatedColumn } = req.body;
-
-  const { userName, email } = req.user;
-
-  // console.log(rowData, index, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
   try {
     if (!fileID) {
@@ -40,18 +37,28 @@ const editDuplicateData = async (req, res, next) => {
 
     // Find the index of the column with the heading "User Details" and "Updated Details"
     let userDetailsIndex = data[0].indexOf("User Details");
-    let updatedDetailsIndex = data[0].indexOf("Updated Details");
+    let previousValueIndex = data[0].indexOf("Previous Values");
+    let updatedValueIndex = data[0].indexOf("Updated Values");
+    let updatedColIndex = data[0].indexOf("Updated Col. Name");
 
-    // If "User Details" column doesn't exist, add it to the header
     if (userDetailsIndex === -1) {
       data[0].push("User Details");
       userDetailsIndex = data[0].length - 1;
     }
 
-    // If "Updated Details" column doesn't exist, add it to the header
-    if (updatedDetailsIndex === -1) {
-      data[0].push("Updated Details");
-      updatedDetailsIndex = data[0].length - 1;
+    if (previousValueIndex === -1) {
+      data[0].push("Previous Values");
+      previousValueIndex = data[0].length - 1;
+    }
+
+    if (updatedValueIndex === -1) {
+      data[0].push("Updated Values");
+      updatedValueIndex = data[0].length - 1;
+    }
+
+    if (updatedColIndex === -1) {
+      data[0].push("Updated Col. Name");
+      updatedColIndex = data[0].length - 1;
     }
 
     // Initialize "User Details" and "Updated Details" columns with "No change" if it's the first time the file is created
@@ -60,8 +67,17 @@ const editDuplicateData = async (req, res, next) => {
       if (data[i][userDetailsIndex] === undefined) {
         data[i][userDetailsIndex] = "No change";
       }
-      if (data[i][updatedDetailsIndex] === undefined) {
-        data[i][updatedDetailsIndex] = "No change";
+
+      if (data[i][previousValueIndex] === undefined) {
+        data[i][previousValueIndex] = "No change";
+      }
+
+      if (data[i][updatedValueIndex] === undefined) {
+        data[i][updatedValueIndex] = "No change";
+      }
+
+      if (data[i][updatedColIndex] === undefined) {
+        data[i][updatedColIndex] = "No change";
       }
     }
 
@@ -69,8 +85,26 @@ const editDuplicateData = async (req, res, next) => {
     data[index + 1] = Object.values(rowData);
 
     // Update the specific row in the array with userName and email
-    data[index + 1][userDetailsIndex] = `${userName}: ${email}`;
-    data[index + 1][updatedDetailsIndex] = `${Object.keys(updatedColumn)}`; //
+    data[index + 1][userDetailsIndex] = `${req.userId}`;
+    data[index + 1][previousValueIndex] = `${Object.keys(updatedColumn).map(
+      (key) => updatedColumn[key][1]
+    )}`;
+    data[index + 1][updatedValueIndex] = `${Object.keys(updatedColumn).map(
+      (key) => updatedColumn[key][0]
+    )}`;
+    data[index + 1][updatedColIndex] = `${Object.keys(updatedColumn)}`;
+
+    await UpdatedData.create({
+      updatedColumn: `${Object.keys(updatedColumn)}`,
+      previousData: `${Object.keys(updatedColumn).map(
+        (key) => updatedColumn[key][1]
+      )}`,
+      currentData: `${Object.keys(updatedColumn).map(
+        (key) => updatedColumn[key][0]
+      )}`,
+      fileId: fileID,
+      userId: req.userId,
+    });
 
     // Convert the updated array of rows back to JSON format
     const jsonArray = [];

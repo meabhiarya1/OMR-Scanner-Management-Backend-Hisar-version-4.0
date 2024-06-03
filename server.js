@@ -10,6 +10,7 @@ const Templete = require("./models/TempleteModel/templete");
 const User = require("./models/User");
 const MetaData = require("./models/TempleteModel/metadata");
 const Files = require("./models/TempleteModel/files");
+const UpdatedData = require("./models/TempleteModel/updatedData");
 const PORT = 4000;
 const upload = require("./routes/upload");
 const path = require("path");
@@ -94,6 +95,22 @@ Templete.hasMany(ImageDataPath, {
 ImageDataPath.belongsTo(Templete, {
   foreignKey: {
     name: "templeteId",
+    allowNull: false,
+  },
+  onUpdate: "CASCADE",
+});
+
+UpdatedData.belongsTo(User, {
+  foreignKey: {
+    name: "userId",
+    allowNull: false,
+  },
+  onUpdate: "CASCADE",
+});
+
+User.hasMany(UpdatedData, {
+  foreignKey: {
+    name: "userId",
     allowNull: false,
   },
   onUpdate: "CASCADE",

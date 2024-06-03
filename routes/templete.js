@@ -19,6 +19,8 @@ const editDuplicateData = require("../controllers/Templete/editDuplicateData");
 const downloadCsv = require("../controllers/Templete/downloadCsv");
 const editTemplateData = require("../controllers/Templete/editTemplateData");
 const deleteTemplate = require("../controllers/Templete/deleteTemplate");
+const updatedDetails = require("../controllers/Templete/updatedDetails");
+const userDetails = require("../controllers/Templete/userDetails");
 
 const router = express.Router();
 
@@ -26,21 +28,23 @@ router.get("/get/templetedata/:id", authMiddleware, getTempleteData); //templete
 router.get("/get/headerdata/:id", authMiddleware, getHeaderData); //fileId
 router.get("/get/alltasks", authMiddleware, getAllTask); //admin
 router.get("/get/task/:id", authMiddleware, getTask); //user
-router.get("/download/csv/:id", authMiddleware, downloadCsv); //file Id
+router.get("/download/csv/:id", downloadCsv); //file Id
+router.get("/updated/details/:id", updatedDetails); //userId
+router.get("/user/details/:id", userDetails); //userId
 
 router.post("/edit/template/:id", authMiddleware, editTemplateData); //template Id
 router.post("/get/templetes", authMiddleware, getTemplete);
 router.post("/get/csvdata", authMiddleware, getCsvData);
 router.post("/get/image", authMiddleware, getImage);
-router.post("/add/templete", addOrUpdateTemplate);
+router.post("/add/templete", authMiddleware, addOrUpdateTemplate);
 router.post("/upload/:id", authMiddleware, handleUpload); //templeteId
 router.post("/data", authMiddleware, handleData);
-router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); // fileId
+router.post("/updatecsvdata/:id", authMiddleware, updateCsvData); //fileId
 router.post("/assign/user", authMiddleware, assignUser);
-router.post("/taskupdation/:id", authMiddleware, taskUpdation); // assigndata Id
+router.post("/taskupdation/:id", authMiddleware, taskUpdation); //assigndata Id
 router.post("/duplicate/data", authMiddleware, duplicateFinder);
 router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
 router.post("/update/duplicatedata", authMiddleware, editDuplicateData);
-router.post("/delete/template/:id", deleteTemplate); //templateId
+router.post("/delete/template/:id", authMiddleware, deleteTemplate); //templateId
 
 module.exports = router;

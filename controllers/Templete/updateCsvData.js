@@ -1,19 +1,20 @@
 const Files = require("../../models/TempleteModel/files");
 const Assigndata = require("../../models/TempleteModel/assigndata");
+const UpdatedData = require("../../models/TempleteModel/updatedData");
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const jsonToCsv = require("../../services/json_to_csv");
 
 const updateCsvData = async (req, res, next) => {
-  const { data, index, updatedColumn } = req.body;
+  const { updatedData, index, updatedColumn } = req.body;
 
   if (updatedColumn === null) {
     return res.status(300).json({ message: "Nothing to Update" });
   }
 
   const fileId = req.params.id;
-  delete data.rowIndex; 
+  delete updatedData.rowIndex;
 
   const { userName, email } = req.user;
   try {
@@ -44,18 +45,28 @@ const updateCsvData = async (req, res, next) => {
 
     // Find the index of the column with the heading "User Details" and "Updated Details"
     let userDetailsIndex = csvData[0].indexOf("User Details");
-    let updatedDetailsIndex = csvData[0].indexOf("Updated Details");
+    let previousValueIndex = csvData[0].indexOf("Previous Values");
+    let updatedValueIndex = csvData[0].indexOf("Updated Values");
+    let updatedColIndex = csvData[0].indexOf("Updated Col. Name");
 
-    // If "User Details" column doesn't exist, add it to the header
     if (userDetailsIndex === -1) {
       csvData[0].push("User Details");
       userDetailsIndex = csvData[0].length - 1;
     }
 
-    // If "Updated Details" column doesn't exist, add it to the header
-    if (updatedDetailsIndex === -1) {
-      csvData[0].push("Updated Details");
-      updatedDetailsIndex = csvData[0].length - 1;
+    if (previousValueIndex === -1) {
+      csvData[0].push("Previous Values");
+      previousValueIndex = csvData[0].length - 1;
+    }
+
+    if (updatedValueIndex === -1) {
+      csvData[0].push("Updated Values");
+      updatedValueIndex = csvData[0].length - 1;
+    }
+
+    if (updatedColIndex === -1) {
+      csvData[0].push("Updated Col. Name");
+      updatedColIndex = csvData[0].length - 1;
     }
 
     // Initialize "User Details" and "Updated Details" columns with "No change" if it's the first time the file is created
@@ -64,19 +75,46 @@ const updateCsvData = async (req, res, next) => {
       if (csvData[i][userDetailsIndex] === undefined) {
         csvData[i][userDetailsIndex] = "No change";
       }
-      if (csvData[i][updatedDetailsIndex] === undefined) {
-        csvData[i][updatedDetailsIndex] = "No change";
+
+      if (csvData[i][previousValueIndex] === undefined) {
+        csvData[i][previousValueIndex] = "No change";
+      }
+
+      if (csvData[i][updatedValueIndex] === undefined) {
+        csvData[i][updatedValueIndex] = "No change";
+      }
+
+      if (csvData[i][updatedColIndex] === undefined) {
+        csvData[i][updatedColIndex] = "No change";
       }
     }
 
     // Update the specific row in the array
-    csvData[index + minIndex - 1] = Object.values(data);
+    csvData[index + minIndex - 1] = Object.values(updatedData);
 
     // Update the specific row in the array with userName and email
-    csvData[index + minIndex - 1][userDetailsIndex] = `${userName}: ${email}`;
-    csvData[index + minIndex - 1][updatedDetailsIndex] = `${Object.keys(
+    csvData[index + minIndex - 1][userDetailsIndex] = `${req.userId}`;
+    csvData[index + minIndex - 1][previousValueIndex] = `${Object.keys(
+      updatedColumn
+    ).map((key) => updatedColumn[key][1])}`;
+    csvData[index + minIndex - 1][updatedValueIndex] = `${Object.keys(
+      updatedColumn
+    ).map((key) => updatedColumn[key][0])}`;
+    csvData[index + minIndex - 1][updatedColIndex] = `${Object.keys(
       updatedColumn
     )}`;
+
+    await UpdatedData.create({
+      updatedColumn: `${Object.keys(updatedColumn)}`,
+      previousData: `${Object.keys(updatedColumn).map(
+        (key) => updatedColumn[key][1]
+      )}`,
+      currentData: `${Object.keys(updatedColumn).map(
+        (key) => updatedColumn[key][0]
+      )}`,
+      fileId: fileId,
+      userId: req.userId,
+    });
 
     // Convert the updated array of rows back to JSON format
     const jsonArray = [];
