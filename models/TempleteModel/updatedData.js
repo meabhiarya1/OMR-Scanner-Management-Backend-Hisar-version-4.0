@@ -13,10 +13,13 @@ const UpdatedDetails = sequelize.define("updatedDetails", {
     type: Sequelize.STRING,
   },
 
-  fileId: {
+  rowIndex: {
     type: Sequelize.STRING,
   },
 
+  fileId: {
+    type: Sequelize.STRING,
+  },
 });
 
 module.exports = UpdatedDetails;

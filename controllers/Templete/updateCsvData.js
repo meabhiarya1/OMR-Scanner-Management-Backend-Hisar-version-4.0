@@ -14,9 +14,11 @@ const updateCsvData = async (req, res, next) => {
   }
 
   const fileId = req.params.id;
+  const updatedIndex = updatedData.rowIndex;
   delete updatedData.rowIndex;
 
-  const { userName, email } = req.user;
+  // console.log(updatedIndex);
+  // const { userName, email } = req.user;
   try {
     // Retrieve the original file data from the database
     const fileData = await Files.findOne({ where: { id: fileId } });
@@ -113,6 +115,7 @@ const updateCsvData = async (req, res, next) => {
         (key) => updatedColumn[key][0]
       )}`,
       fileId: fileId,
+      rowIndex: updatedIndex,
       userId: req.userId,
     });
 

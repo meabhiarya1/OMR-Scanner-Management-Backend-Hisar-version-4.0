@@ -21,23 +21,28 @@ const updatedDetails = async (req, res) => {
     }
 
     if (!userData || userData.length === 0) {
-      return res.status(404).json({ error: "No data found for the given user ID" });
+      return res
+        .status(404)
+        .json({ error: "No data found for the given user ID" });
     }
 
     // Structure the response data
     const response = {
       updatedColumn: [],
       previousData: [],
-      currentData: []
+      currentData: [],
+      rowIndex: [],
     };
 
-    userData.forEach(data => {
-      if (data.updatedColumn && data.previousData && data.currentData) {
+    userData.forEach((data) => {
+      if (data.updatedColumn && data.previousData && data.currentData && data.rowIndex) {
         response.updatedColumn.push(data.updatedColumn);
         response.previousData.push(data.previousData);
         response.currentData.push(data.currentData);
+        response.rowIndex.push(data.rowIndex);
       } else {
         console.warn("Incomplete data entry found:", data);
+        return res.status(500).json({ error: "Incomplete data entry found" });
       }
     });
 
@@ -46,10 +51,11 @@ const updatedDetails = async (req, res) => {
     }
 
     return res.json(response);
-
   } catch (error) {
     console.error("Error fetching updated details:", error);
-    return res.status(500).json({ error: "An error occurred while processing your request" });
+    return res
+      .status(500)
+      .json({ error: "An error occurred while processing your request" });
   }
 };
 
