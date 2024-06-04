@@ -1,5 +1,7 @@
 const UserActivity = require("../../models/UserActivity");
 
+const moment = require("moment-timezone");
+
 const userDetails = async (req, res) => {
   const userId = req.params.id;
 
@@ -20,9 +22,18 @@ const userDetails = async (req, res) => {
       return res.status(404).json({ error: "No activity found for this user" });
     }
 
-    res.status(200).json({ userActivitydetails });
+    // Convert timestamps to India Standard Time (IST)
+    const formattedDetails = userActivitydetails.map((activity) => ({
+      ...activity.dataValues,
+      timestamp: moment(activity.timestamp).tz("Asia/Kolkata").format(),
+    }));
+
+    res.status(200).json({ userActivitydetails: formattedDetails });
   } catch (err) {
-    res.status(500).json({ error: "An error occurred while fetching user activity details", details: err.message });
+    res.status(500).json({
+      error: "An error occurred while fetching user activity details",
+      details: err.message,
+    });
   }
 };
 
