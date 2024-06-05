@@ -36,99 +36,87 @@ const editDuplicateData = async (req, res, next) => {
     });
 
     // Find the index of the column with the heading "User Details" and "Updated Details"
-    let userDetailsIndex = data[0].indexOf("User Details");
-    let previousValueIndex = data[0].indexOf("Previous Values");
-    let updatedValueIndex = data[0].indexOf("Updated Values");
-    let updatedColIndex = data[0].indexOf("Updated Col. Name");
+    const userDetailsIndex = data[0].indexOf("User Details");
+    const previousValueIndex = data[0].indexOf("Previous Values");
+    const updatedValueIndex = data[0].indexOf("Updated Values");
+    const updatedColIndex = data[0].indexOf("Updated Col. Name");
 
-    if (userDetailsIndex === -1) {
-      data[0].push("User Details");
-      userDetailsIndex = data[0].length - 1;
-    }
+    const checkAndAddColumn = (columnName, index) => {
+      if (index === -1) {
+        data[0].push(columnName);
+        return data[0].length - 1;
+      }
+      return index;
+    };
 
-    if (previousValueIndex === -1) {
-      data[0].push("Previous Values");
-      previousValueIndex = data[0].length - 1;
-    }
+    const userDetailsIdx = checkAndAddColumn("User Details", userDetailsIndex);
+    const previousValueIdx = checkAndAddColumn(
+      "Previous Values",
+      previousValueIndex
+    );
+    const updatedValueIdx = checkAndAddColumn(
+      "Updated Values",
+      updatedValueIndex
+    );
+    const updatedColIdx = checkAndAddColumn(
+      "Updated Col. Name",
+      updatedColIndex
+    );
 
-    if (updatedValueIndex === -1) {
-      data[0].push("Updated Values");
-      updatedValueIndex = data[0].length - 1;
-    }
-
-    if (updatedColIndex === -1) {
-      data[0].push("Updated Col. Name");
-      updatedColIndex = data[0].length - 1;
-    }
-
-    // Initialize "User Details" and "Updated Details" columns with "No change" if it's the first time the file is created
-
+    // Initialize columns if undefined
     for (let i = 1; i < data.length; i++) {
-      if (data[i][userDetailsIndex] === undefined) {
-        data[i][userDetailsIndex] = "No change";
-      }
-
-      if (data[i][previousValueIndex] === undefined) {
-        data[i][previousValueIndex] = "No change";
-      }
-
-      if (data[i][updatedValueIndex] === undefined) {
-        data[i][updatedValueIndex] = "No change";
-      }
-
-      if (data[i][updatedColIndex] === undefined) {
-        data[i][updatedColIndex] = "No change";
-      }
+      data[i][userDetailsIdx] = data[i][userDetailsIdx] || "No change";
+      data[i][previousValueIdx] = data[i][previousValueIdx] || "No change";
+      data[i][updatedValueIdx] = data[i][updatedValueIdx] || "No change";
+      data[i][updatedColIdx] = data[i][updatedColIdx] || "No change";
     }
 
     // Update the specific row in the array
     data[index + 1] = Object.values(rowData);
 
     // Update the specific row in the array with userName and email
-    data[index + 1][userDetailsIndex] = `${req.userId}`;
-    data[index + 1][previousValueIndex] = `${Object.keys(updatedColumn).map(
-      (key) => updatedColumn[key][1]
-    )}`;
-    data[index + 1][updatedValueIndex] = `${Object.keys(updatedColumn).map(
-      (key) => updatedColumn[key][0]
-    )}`;
-    data[index + 1][updatedColIndex] = `${Object.keys(updatedColumn)}`;
+    const updateColumnValues = (key) => updatedColumn[key][0];
+    const previousColumnValues = (key) => updatedColumn[key][1];
+
+    data[index + 1][userDetailsIdx] = `${req.userId}`;
+    data[index + 1][previousValueIdx] = Object.keys(updatedColumn)
+      .map(previousColumnValues)
+      .join(",");
+    data[index + 1][updatedValueIdx] = Object.keys(updatedColumn)
+      .map(updateColumnValues)
+      .join(",");
+    data[index + 1][updatedColIdx] = Object.keys(updatedColumn).join(",");
 
     await UpdatedData.create({
-      updatedColumn: `${Object.keys(updatedColumn)}`,
-      previousData: `${Object.keys(updatedColumn).map(
-        (key) => updatedColumn[key][1]
-      )}`,
-      currentData: `${Object.keys(updatedColumn).map(
-        (key) => updatedColumn[key][0]
-      )}`,
+      updatedColumn: Object.keys(updatedColumn).join(","),
+      previousData: Object.keys(updatedColumn)
+        .map(previousColumnValues)
+        .join(","),
+      currentData: Object.keys(updatedColumn).map(updateColumnValues).join(","),
       fileId: fileID,
       userId: req.userId,
     });
 
     // Convert the updated array of rows back to JSON format
-    const jsonArray = [];
     const headers = data[0];
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
+    const jsonArray = data.slice(1).map((row) => {
       const rowObject = {};
-      for (let j = 0; j < headers.length; j++) {
-        rowObject[headers[j]] = row[j];
-      }
-      jsonArray.push(rowObject);
-    }
+      headers.forEach((header, j) => {
+        rowObject[header] = row[j];
+      });
+      return rowObject;
+    });
 
     // Convert the updated JSON data back to CSV format using the jsonToCsv function
     const updatedCSVContent = jsonToCsv(jsonArray);
 
-    if (updatedCSVContent === null) {
+    if (!updatedCSVContent) {
       throw new Error("Error converting updated JSON to CSV");
     }
 
     fs.unlinkSync(filePath);
-    fs.writeFileSync(filePath, updatedCSVContent, {
-      encoding: "utf8",
-    });
+    fs.writeFileSync(filePath, updatedCSVContent, { encoding: "utf8" });
+
     return res.status(200).json({ message: "Data Updated successfully" });
   } catch (error) {
     console.error("Error handling data:", error);

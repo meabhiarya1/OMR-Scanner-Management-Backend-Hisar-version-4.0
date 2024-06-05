@@ -1,7 +1,6 @@
 const Assigndata = require("../../models/TempleteModel/assigndata");
 
 const assignUser = async (req, res, next) => {
-  
   const userTasks = req.body;
   // console.log(req.body, "assign");
   try {
@@ -18,10 +17,8 @@ const assignUser = async (req, res, next) => {
         correctedCsvFilePath: correctedFilePath,
         errorFilePath: errorFilePath,
         imageDirectoryPath: imageDirectoryPath
-
       });
     });
-
     await Promise.all(creationPromises);
     return res.status(200).json({ message: "Users assigned successfully" });
   } catch (error) {

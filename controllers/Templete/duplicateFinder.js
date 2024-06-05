@@ -1,8 +1,9 @@
 const Files = require("../../models/TempleteModel/files");
 const fs = require("fs").promises;
 const path = require("path");
-const jsonToCsv = require("../../services/json_to_csv");
 const csvToJson = require("../../services/csv_to_json");
+
+const MAX_CONCURRENT_FILE_OPS = 10;
 
 const duplicateFinder = async (req, res, next) => {
   const { colName, fileID, imageColumnName } = req.body;
@@ -27,41 +28,41 @@ const duplicateFinder = async (req, res, next) => {
     }
 
     const data = await csvToJson(filePath);
-
     const imageCols = imageColumnName.split(",");
     const duplicates = {};
-    const base64Images = {};
+    const valueSet = new Set();
 
-    for (const [index, row] of data.entries()) {
+    const processRow = async (row, index) => {
       const value = row[colName];
-      const rowBase64Images = [];
-
-      for (const col of imageCols) {
-        const imagePath = row[col];
-        const sourceFilePath = path.resolve(__dirname, "../../extractedFiles", imagePath);
-
-        try {
-          await fs.access(sourceFilePath);
-          const image = await fs.readFile(sourceFilePath);
-          rowBase64Images.push(image.toString("base64"));
-        } catch (err) {
-          return res.status(404).json({ error: `Error reading image file at ${sourceFilePath}: ${err.message}` });
-        }
-      }
-
       if (value) {
-        if (!base64Images[value]) {
-          base64Images[value] = [];
-        }
-        base64Images[value].push(rowBase64Images);
-
-        if (duplicates[value]) {
-          duplicates[value].push({ index, row, base64Images: rowBase64Images });
+        if (valueSet.has(value)) {
+          const imagePaths = imageCols.map((col) => row[col]).filter(Boolean);
+          duplicates[value] = duplicates[value] || [];
+          duplicates[value].push({ index, row, imagePaths });
         } else {
-          duplicates[value] = [{ index, row, base64Images: rowBase64Images }];
+          valueSet.add(value);
         }
       }
-    }
+    };
+
+    const limitConcurrency = async (tasks, limit) => {
+      const results = [];
+      const executing = new Set();
+      for (const task of tasks) {
+        const p = Promise.resolve().then(() => task());
+        results.push(p);
+        executing.add(p);
+        const clean = () => executing.delete(p);
+        p.then(clean).catch(clean);
+        if (executing.size >= limit) {
+          await Promise.race(executing);
+        }
+      }
+      return Promise.all(results);
+    };
+
+    const tasks = data.map((row, index) => () => processRow(row, index));
+    await limitConcurrency(tasks, MAX_CONCURRENT_FILE_OPS);
 
     const duplicateValues = Object.keys(duplicates).filter(
       (value) => duplicates[value].length > 1
@@ -75,6 +76,9 @@ const duplicateFinder = async (req, res, next) => {
     return res.status(200).json({ duplicates: duplicateRows });
   } catch (error) {
     console.error("Error finding duplicates:", error);
+    if (error.message.startsWith("Error reading image file")) {
+      return res.status(404).json({ error: error.message });
+    }
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

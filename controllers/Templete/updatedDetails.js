@@ -2,9 +2,12 @@ const UpdatedData = require("../../models/TempleteModel/updatedData");
 
 const updatedDetails = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const { taskData } = req.body;
 
-    if (!userId) {
+    const minIndex = parseInt(taskData.min);
+    const maxIndex = parseInt(taskData.max);
+
+    if (!taskData.userId) {
       return res.status(400).json({ error: "User ID not provided" });
     }
 
@@ -12,7 +15,8 @@ const updatedDetails = async (req, res) => {
     try {
       userData = await UpdatedData.findAll({
         where: {
-          userId: userId,
+          userId: taskData.userId,
+          fileId: taskData.fileId,
         },
       });
     } catch (dbError) {
@@ -35,7 +39,12 @@ const updatedDetails = async (req, res) => {
     };
 
     userData.forEach((data) => {
-      if (data.updatedColumn && data.previousData && data.currentData && data.rowIndex) {
+      if (
+        data.updatedColumn &&
+        data.previousData &&
+        data.currentData &&
+        data.rowIndex
+      ) {
         response.updatedColumn.push(data.updatedColumn);
         response.previousData.push(data.previousData);
         response.currentData.push(data.currentData);
@@ -50,7 +59,31 @@ const updatedDetails = async (req, res) => {
       return res.status(500).json({ error: "No complete data entries found" });
     }
 
-    return res.json(response);
+    // Filter the response based on minIndex and maxIndex
+    const filteredResponse = {
+      updatedColumn: [],
+      previousData: [],
+      currentData: [],
+      rowIndex: [],
+    };
+    for (let i = 0; i < response.rowIndex.length; i++) {
+      const rowIndexValue = Number(response.rowIndex[i]); // Convert each element to a number
+
+      const adjustedIndex = rowIndexValue + 1;
+      if (adjustedIndex >= minIndex && adjustedIndex <= maxIndex) {
+        filteredResponse.updatedColumn.push(response.updatedColumn[i]);
+        filteredResponse.previousData.push(response.previousData[i]);
+        filteredResponse.currentData.push(response.currentData[i]);
+        filteredResponse.rowIndex.push(response.rowIndex[i]);
+      }
+    }
+
+    if (filteredResponse.updatedColumn.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No data entries found within the specified range" });
+    }
+    return res.json(filteredResponse);
   } catch (error) {
     console.error("Error fetching updated details:", error);
     return res
