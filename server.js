@@ -18,6 +18,7 @@ const bcrypt = require("bcryptjs");
 const Assigndata = require("./models/TempleteModel/assigndata");
 const RowIndexData = require("./models/TempleteModel/rowIndexData");
 const ImageDataPath = require("./models/TempleteModel/templeteImages");
+const builtPath = path.join(__dirname, "./build");
 
 //middlewares
 app.use(cors());
@@ -33,6 +34,7 @@ const imageDirectoryPath = path.join(
   "Images_2024-05-04T04-38-30-972Z/005.jpg"
 );
 app.use("/images", express.static(imageDirectoryPath));
+app.use(express.static(builtPath));
 //all routes
 app.use("/users", userRoutes);
 app.use(upload);
