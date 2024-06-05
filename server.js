@@ -18,6 +18,7 @@ const bcrypt = require("bcryptjs");
 const Assigndata = require("./models/TempleteModel/assigndata");
 const RowIndexData = require("./models/TempleteModel/rowIndexData");
 const ImageDataPath = require("./models/TempleteModel/templeteImages");
+const builtPath = path.join(__dirname, "./build");
 
 //middlewares
 app.use(cors());
@@ -35,8 +36,8 @@ const imageDirectoryPath = path.join(
 // Serve static files from the 'extractedFiles' directory
 app.use("/images", express.static(imageDirectoryPath));
 app.use('/images', express.static(path.join(__dirname, 'extractedFiles')));
+app.use(express.static(builtPath));
 
-//all routes
 app.use("/users", userRoutes);
 app.use(upload);
 app.use(compareCsv);
