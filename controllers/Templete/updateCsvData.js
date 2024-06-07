@@ -1,6 +1,7 @@
 const Files = require("../../models/TempleteModel/files");
 const Assigndata = require("../../models/TempleteModel/assigndata");
 const UpdatedData = require("../../models/TempleteModel/updatedData");
+const UserDetails = require("../../models/User");
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
@@ -25,6 +26,10 @@ const updateCsvData = async (req, res, next) => {
 
     const assignData = await Assigndata.findOne({
       where: { userId: req.userId },
+    });
+
+    const userDetails = await UserDetails.findOne({
+      where: { id: req.userId },
     });
 
     const { min, max } = assignData;
@@ -72,7 +77,9 @@ const updateCsvData = async (req, res, next) => {
 
     csvData[index + minIndex - 1] = Object.values(updatedData);
     const updatedColumns = Object.keys(updatedColumn);
-    csvData[index + minIndex - 1][userDetailsIndex] = `${req.userId}`;
+    csvData[index + minIndex - 1][
+      userDetailsIndex
+    ] = `${userDetails.userName}:${userDetails.email}`;
     csvData[index + minIndex - 1][previousValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][1])
       .join(",");

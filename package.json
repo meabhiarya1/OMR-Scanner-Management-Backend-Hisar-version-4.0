@@ -18,6 +18,7 @@
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "express": "^4.19.2",
+    "fast-csv": "^5.0.1",
     "jimp": "^0.22.12",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",

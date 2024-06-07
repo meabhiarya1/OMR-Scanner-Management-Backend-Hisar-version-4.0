@@ -39,18 +39,19 @@ const updatedDetails = async (req, res) => {
     };
 
     userData.forEach((data) => {
-      if (
-        data.updatedColumn &&
-        data.previousData &&
-        data.currentData &&
-        data.rowIndex
-      ) {
-        response.updatedColumn.push(data.updatedColumn);
-        response.previousData.push(data.previousData);
-        response.currentData.push(data.currentData);
-        response.rowIndex.push(data.rowIndex);
-      } else {
-        console.warn("Incomplete data entry found:", data);
+      try {
+        if (
+          data.updatedColumn &&
+          data.previousData &&
+          data.currentData &&
+          data.rowIndex
+        ) {
+          response.updatedColumn.push(data.updatedColumn);
+          response.previousData.push(data.previousData);
+          response.currentData.push(data.currentData);
+          response.rowIndex.push(data.rowIndex);
+        }
+      } catch (error) {
         return res.status(500).json({ error: "Incomplete data entry found" });
       }
     });

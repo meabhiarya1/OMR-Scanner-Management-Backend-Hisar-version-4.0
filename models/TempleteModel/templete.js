@@ -19,6 +19,9 @@ const Templete = sequelize.define("templetes", {
   pageCount: {
     type: Sequelize.INTEGER,
   },
+  typeOption: {
+    type: Sequelize.STRING,
+  },
 });
 
 module.exports = Templete;
