@@ -4,13 +4,27 @@ const Files = require("../../models/TempleteModel/files");
 const path = require("path");
 const fs = require("fs");
 const unzipper = require("unzipper");
+const { createExtractorFromFile } = require("node-unrar-js");
 const getAllDirectories = require("../../services/directoryFinder");
 const jsonToCsv = require("../../services/json_to_csv");
 
+async function extractArchive(file, destination) {
+  try {
+    const extractor = await createExtractorFromFile({
+      filepath: file,
+      targetPath: destination,
+    });
+    const files = [...extractor.extract().files];
+    return { success: true, files };
+  } catch (err) {
+    console.error("Extraction failed:", err);
+    return { success: false, error: err };
+  }
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const ext = ["zip", "zipx", "jar", "apk", "ipa", "cbz", "7z"];
-    // Determine the destination folder based on file type
+    const ext = ["zip", "zipx", "jar", "apk", "ipa", "cbz", "7z", "rar"];
     const destinationFolder = ext.includes(file.originalname.split(".").pop())
       ? "zipFile/"
       : "csvFile/";
@@ -25,14 +39,57 @@ const storage = multer.diskStorage({
   },
 });
 
-// Accept both "csvFile" and "zipFile" fields
 const upload = multer({ storage: storage }).fields([
   { name: "csvFile" },
   { name: "zipFile" },
 ]);
 
+async function processCSV(filePath, res, req, createdFile, pathDir) {
+  if (fs.existsSync(filePath)) {
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(worksheet, {
+      raw: true,
+      defval: "",
+    });
+    const colNames = req.query.imageNames.split(",");
+    const updatedJson = data.map((obj) => obj);
+    const missingCols = colNames.filter(
+      (colName) => !updatedJson[0].hasOwnProperty(colName)
+    );
+    if (missingCols.length > 0) {
+      return res.status(400).json({
+        error: `Image column name(s) not found: ${missingCols.join(", ")}`,
+      });
+    }
+    colNames.forEach((colName) => {
+      const column = colName.replaceAll('"', "");
+      updatedJson.forEach((obj) => {
+        const imagePath = obj[column];
+        const filename = path.basename(imagePath);
+        obj[column] = `${pathDir}/${filename}`;
+      });
+    });
+    fs.unlinkSync(filePath);
+    const updatedCSVContent = jsonToCsv(updatedJson);
+    fs.writeFileSync(filePath, updatedCSVContent, {
+      encoding: "utf8",
+    });
+    res.status(200).json({ fileId: createdFile.id });
+    console.log("File processed successfully");
+  } else {
+    res.status(404).json({ error: "CSV File not found" });
+  }
+}
 
-const uploadPromise = async (req, res, next, id, imageColNames) => {
+const handleUpload = async (req, res, next) => {
+  const userRole = req.role;
+  if (userRole !== "Admin") {
+    return res
+      .status(403)
+      .json({ message: "You don't have access for performing this action" });
+  }
   try {
     await new Promise((resolve, reject) => {
       upload(req, res, async function (err) {
@@ -40,59 +97,68 @@ const uploadPromise = async (req, res, next, id, imageColNames) => {
           console.error("Error uploading files:", err);
           return reject("Error uploading files");
         }
+        const { csvFile, zipFile } = req.files;
+        const createdFile = await Files.create({
+          csvFile: csvFile[0].filename,
+          zipFile: zipFile[0].filename,
+          templeteId: req.params.id,
+        });
+        const filePath = path.join(
+          __dirname,
+          "../../csvFile",
+          csvFile[0].filename
+        );
+        const zipFilePath = path.join(
+          __dirname,
+          "../../zipFile",
+          zipFile[0].filename
+        );
+        const fileNameArray = zipFile[0].filename.split(".");
+        const extension = fileNameArray[fileNameArray.length - 1];
+        let destinationFolderPath = path.join(
+          __dirname,
+          "../../extractedFiles",
+          zipFile[0].filename.replace(`.${extension}`, "")
+        );
 
-        try {
-          const { csvFile, zipFile } = req.files;
+        if (!fs.existsSync(destinationFolderPath)) {
+          fs.mkdirSync(destinationFolderPath, { recursive: true });
+        }
+        let allDirectories;
+        if (extension === "rar") {
+          try {
+            const extractionResult = await extractArchive(
+              zipFilePath,
+              destinationFolderPath
+            );
 
-          // Update database with file names
-          const createdFile = await Files.create({
-            csvFile: csvFile[0].filename,
-            zipFile: zipFile[0].filename,
-            templeteId: id,
-          });
-
-          const filePath = path.join(
-            __dirname,
-            "../../csvFile",
-            csvFile[0].filename
-          );
-          const zipFilePath = path.join(
-            __dirname,
-            "../../zipFile",
-            zipFile[0].filename
-          );
-          const destinationFolderPath = path.join(
-            __dirname,
-            "../../extractedFiles",
-            zipFile[0].filename.replace(".zip", "")
-          );
-
-          // Ensure destination folder exists
-          if (!fs.existsSync(destinationFolderPath)) {
-            try {
-              fs.mkdirSync(destinationFolderPath, { recursive: true });
-            } catch (error) {
-              console.error("Error creating destination folder:", error);
-              throw error;
+            if (!extractionResult.success) {
+              console.error("Extraction failed:", extractionResult.error);
+              return res.status(400).json({ error: "Extraction failed" });
             }
-          }
+            allDirectories = getAllDirectories(destinationFolderPath);
+            const pathDir = `${zipFile[0].filename.replace(
+              `.${extension}`,
+              ""
+            )}/${allDirectories.join("/")}`;
 
+            await processCSV(filePath, res, req, createdFile, pathDir);
+          } catch (extractionErr) {
+            console.error("Error during extraction:", extractionErr);
+            return res.status(400).json({ error: "Extraction failed" });
+          }
+        } else if (extension === "zip") {
           const extractStream = unzipper.Parse();
           extractStream.on("entry", (entry) => {
             const fileName = entry.path;
             const destinationPath = path.join(destinationFolderPath, fileName);
-
-            // Ensure parent directories exist before writing files
             const parentDir = path.dirname(destinationPath);
             if (!fs.existsSync(parentDir)) {
               fs.mkdirSync(parentDir, { recursive: true });
             }
-
             if (fileName.endsWith("/")) {
-              // Create directories
               fs.mkdirSync(destinationPath, { recursive: true });
             } else {
-              // Extract files
               entry.pipe(fs.createWriteStream(destinationPath));
             }
           });
@@ -103,89 +169,19 @@ const uploadPromise = async (req, res, next, id, imageColNames) => {
           });
 
           extractStream.on("finish", async () => {
-            console.log("File unzipped successfully");
-
-            const allDirectories = getAllDirectories(destinationFolderPath);
+            allDirectories = getAllDirectories(destinationFolderPath);
             const pathDir = `${zipFile[0].filename.replace(
-              ".zip",
+              `.${extension}`,
               ""
             )}/${allDirectories.join("/")}`;
 
-            if (fs.existsSync(filePath)) {
-              const workbook = XLSX.readFile(filePath);
-              const sheetName = workbook.SheetNames[0];
-              const worksheet = workbook.Sheets[sheetName];
-              const data = XLSX.utils.sheet_to_json(worksheet, {
-                raw: true,
-                defval: "",
-                // header: 1,
-              });
-
-              const colNames = imageColNames.split(",");
-              const updatedJson = data.map((obj) => obj);
-
-              // Check if all column names exist in the JSON data
-              const missingCols = colNames.filter(
-                (colName) => !updatedJson[0].hasOwnProperty(colName)
-              );
-
-              if (missingCols.length > 0) {
-                return res.status(400).json({
-                  error: `Image column name(s) not found: ${missingCols.join(
-                    ", "
-                  )}`,
-                });
-              }
-
-              // Process each column name and update the corresponding values in the JSON data
-              colNames.forEach((colName) => {
-                const column = colName.replaceAll('"', ""); // Remove any extra quotes from the column name
-                updatedJson.forEach((obj) => {
-                  const imagePath = obj[column];
-                  const filename = path.basename(imagePath);
-                  obj[column] = `${pathDir}/${filename}`;
-                });
-              });
-
-              fs.unlinkSync(filePath);
-
-              const updatedCSVContent = jsonToCsv(updatedJson);
-
-              // Write the updated content back to the original file
-              fs.writeFileSync(filePath, updatedCSVContent, {
-                encoding: "utf8",
-              });
-              res.status(200).json({ fileId: createdFile.id });
-              resolve("File Uploaded Successfully");
-            } else {
-              res.status(404).json({ error: "CSV File not found" });
-            }
+            await processCSV(filePath, res, req, createdFile, pathDir);
           });
 
           fs.createReadStream(zipFilePath).pipe(extractStream);
-        } catch (error) {
-          console.error("Error updating database:", error);
-          return res.status(500).send(error);
         }
       });
     });
-  } catch (error) {
-    console.error("Error handling upload:", error);
-    return res.status(500).send(error);
-  }
-};
-
-const handleUpload = async (req, res, next) => {
-  const userRole = req.role;
-  // console.log(userRole, "-----------");
-  if (userRole != "Admin") {
-    return res
-      .status(500)
-      .json({ message: "You don't have access for performing this action" });
-  }
-  try {
-    await uploadPromise(req, res, next, req.params.id, req.query.imageNames);
-    console.log("Files Uploaded successfully");
   } catch (error) {
     console.error("Error handling upload:", error);
     return res.status(500).send(error);
