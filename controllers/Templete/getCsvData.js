@@ -177,6 +177,7 @@ const getCsvData = async (req, res, next) => {
     }
 
     const filteredData = [];
+    
 
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
 

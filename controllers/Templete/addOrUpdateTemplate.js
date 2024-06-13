@@ -72,9 +72,7 @@ const addOrUpdateTemplate = async (req, res) => {
       throw new Error("No data provided");
     }
 
-    const { templateData, metaData, templateId } = JSON.parse(
-      req.body.data
-    );
+    const { templateData, metaData, templateId } = JSON.parse(req.body.data);
 
     if (!templateData || !templateData.name || !templateData.pageCount) {
       return res
@@ -103,6 +101,7 @@ const addOrUpdateTemplate = async (req, res) => {
         name: templateData.name,
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
+        rollNumberRange: templateData.rollNumberRange,
       });
 
       // Delete existing metadata and images
@@ -115,6 +114,7 @@ const addOrUpdateTemplate = async (req, res) => {
         TempleteType: "Data Entry",
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
+        rollNumberRange: templateData.rollNumberRange,
       });
     }
 

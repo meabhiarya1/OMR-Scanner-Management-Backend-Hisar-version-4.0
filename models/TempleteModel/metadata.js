@@ -40,6 +40,7 @@ const MetaData = sequelize.define("templetedata", {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
+
   templeteId: {
     type: Sequelize.INTEGER,
     allowNull: false,
