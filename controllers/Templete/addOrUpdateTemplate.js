@@ -101,7 +101,7 @@ const addOrUpdateTemplate = async (req, res) => {
         name: templateData.name,
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
-        rollNumberRange: templateData.rollNumberRange,
+        // rollNumberRange: templateData.rollNumberRange,
       });
 
       // Delete existing metadata and images
@@ -114,7 +114,7 @@ const addOrUpdateTemplate = async (req, res) => {
         TempleteType: "Data Entry",
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
-        rollNumberRange: templateData.rollNumberRange,
+        // rollNumberRange: templateData.rollNumberRange,
       });
     }
 
