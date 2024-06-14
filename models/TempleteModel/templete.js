@@ -22,10 +22,16 @@ const Templete = sequelize.define("templetes", {
   typeOption: {
     type: Sequelize.STRING,
   },
-  rollNumberRange: {
-    type: Sequelize.STRING,
-    defaultValue: null,
+
+  assignId: {
+    type: Sequelize.INTEGER,
+    // allowNull: false,
+    references: {
+      model: "assigndata", // 'Templete' refers to the table name
+      key: "id",
+    },
   },
+
 });
 
 module.exports = Templete;

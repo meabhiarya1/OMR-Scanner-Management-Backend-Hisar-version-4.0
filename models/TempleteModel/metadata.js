@@ -36,9 +36,18 @@ const MetaData = sequelize.define("templetedata", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+
+  dataFieldType: {
+    type: Sequelize.STRING,
+  },
+
   pageNo: {
     type: Sequelize.INTEGER,
     allowNull: false,
+  },
+
+  fieldRange: {
+    type: Sequelize.STRING,
   },
 
   templeteId: {
