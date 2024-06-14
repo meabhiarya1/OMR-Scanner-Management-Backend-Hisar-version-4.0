@@ -12,13 +12,14 @@ const deleteTemplate = async (req, res) => {
       return res.status(404).json({ error: "Template not found" });
     }
 
-    // Check if there are any AssignData records associated with this template
-    const assignDataCount = await AssignData.findByPk(templateId);
+    // Check if there are any AssignData records associated with this templateId
+    const assignData = await AssignData.findOne({
+      where: { templeteId: templateId },
+    });
 
-    if (assignDataCount != null) {
+    if (assignData != null) {
       return res.status(400).json({
-        error:
-          "Template cannot be deleted as there are associated AssignData records",
+        error: "Template cannot be deleted because tasks are assigned with this template",
       });
     }
 
@@ -28,9 +29,7 @@ const deleteTemplate = async (req, res) => {
     res.status(200).json({ message: "Template deleted successfully" });
   } catch (error) {
     console.error("Error deleting template:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while deleting the template" });
+    res.status(500).json({ error: "An error occurred while deleting the template" });
   }
 };
 

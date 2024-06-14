@@ -97,7 +97,7 @@ Assigndata.belongsTo(Templete, {
 });
 
 Templete.hasMany(Assigndata, {
-  foreignKey: "templateId",
+  // foreignKey: "assignId",
   onUpdate: "CASCADE",
 });
 
