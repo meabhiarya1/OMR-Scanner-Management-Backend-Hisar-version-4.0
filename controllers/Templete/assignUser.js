@@ -1,22 +1,11 @@
 const Assigndata = require("../../models/TempleteModel/assigndata");
-const Template = require("../../models/TempleteModel/templete");
 
 const assignUser = async (req, res, next) => {
   const userTasks = req.body;
   // console.log(req.body, "assign");
   try {
     const creationPromises = userTasks.map(async (task) => {
-      const {
-        userId,
-        templeteId,
-        fileId,
-        max,
-        min,
-        moduleType,
-        correctedFilePath,
-        errorFilePath,
-        imageDirectoryPath,
-      } = task;
+      const { userId, templeteId, fileId, max, min, moduleType, correctedFilePath, errorFilePath, imageDirectoryPath } = task;
       await Assigndata.create({
         userId: userId,
         templeteId: templeteId,
@@ -27,7 +16,7 @@ const assignUser = async (req, res, next) => {
         moduleType: "Data Entry",
         correctedCsvFilePath: correctedFilePath,
         errorFilePath: errorFilePath,
-        imageDirectoryPath: imageDirectoryPath,
+        imageDirectoryPath: imageDirectoryPath
       });
     });
     await Promise.all(creationPromises);

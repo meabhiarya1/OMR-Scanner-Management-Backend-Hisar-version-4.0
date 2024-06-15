@@ -35,7 +35,7 @@ const imageDirectoryPath = path.join(
 );
 // Serve static files from the 'extractedFiles' directory
 app.use("/images", express.static(imageDirectoryPath));
-app.use("/images", express.static(path.join(__dirname, "extractedFiles")));
+app.use('/images', express.static(path.join(__dirname, 'extractedFiles')));
 app.use(express.static(builtPath));
 
 app.use("/users", userRoutes);
@@ -85,19 +85,6 @@ RowIndexData.belongsTo(Assigndata, {
   foreignKey: {
     allowNull: false,
   },
-  onUpdate: "CASCADE",
-});
-
-Assigndata.belongsTo(Templete, {
-  foreignKey: {
-    name: "templeteId",
-    allowNull: false,
-  },
-  onUpdate: "CASCADE",
-});
-
-Templete.hasMany(Assigndata, {
-  // foreignKey: "assignId",
   onUpdate: "CASCADE",
 });
 

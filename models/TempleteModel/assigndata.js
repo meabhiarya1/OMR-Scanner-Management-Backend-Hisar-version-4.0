@@ -3,7 +3,17 @@ const Sequelize = require("sequelize");
 const sequelize = require("../../utils/database");
 
 const Assigndata = sequelize.define("assigndata", {
+  // id: {
+  //   type: Sequelize.INTEGER,
+  //   autoIncrement: true,
+  //   allowNull: false,
+  //   primaryKey: true,
+  // },
   userId: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  templeteId: {
     type: Sequelize.STRING,
     allowNull: false,
   },
@@ -52,15 +62,6 @@ const Assigndata = sequelize.define("assigndata", {
   },
   currentIndex: {
     type: Sequelize.INTEGER,
-  },
-
-  templeteId: {
-    type: Sequelize.INTEGER,
-    // allowNull: false,
-    references: {
-      model: "templetes", // 'Templete' refers to the table name
-      key: "id",
-    },
   },
 });
 
