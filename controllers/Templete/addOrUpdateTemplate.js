@@ -74,6 +74,7 @@ const addOrUpdateTemplate = async (req, res) => {
 
     const { templateData, metaData, templateId } = JSON.parse(req.body.data);
 
+
     if (!templateData || !templateData.name || !templateData.pageCount) {
       return res
         .status(400)

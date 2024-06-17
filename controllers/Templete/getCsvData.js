@@ -128,7 +128,7 @@ const getCsvData = async (req, res, next) => {
 
     function isBlankOrSpecial(obj, conditions, checkBeforeThisKey) {
       const blankCount = conditions.Blank || 0;
-      const includeStar = conditions["*"] || false;
+      const includeStar = conditions.Pattern || false;
       const includeAllData = conditions.AllData || false;
 
       // Determine the index of checkBeforeThisKey in the object's keys
@@ -168,8 +168,8 @@ const getCsvData = async (req, res, next) => {
             if (value.trim() === "" || value === "BLANK") {
               return true;
             }
-            // Check if value includes "*"
-            if (value.includes("*")) {
+            // Check if value includes conditions.Pattern
+            if (value.includes(conditions.Pattern)) {
               return true;
             }
             // Check if value has spaces
@@ -189,7 +189,7 @@ const getCsvData = async (req, res, next) => {
       // Check includeStar condition only before checkBeforeThisKey
       if (includeStar) {
         const hasStar = keysToCheck.some(
-          (key) => typeof obj[key] === "string" && obj[key].includes("*")
+          (key) => typeof obj[key] === "string" && obj[key].includes(conditions.Pattern)
         );
 
         // Check if blankCount condition is met only before checkBeforeThisKey

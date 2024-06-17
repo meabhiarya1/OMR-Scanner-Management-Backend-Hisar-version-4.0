@@ -50,6 +50,10 @@ const MetaData = sequelize.define("templetedata", {
     type: Sequelize.STRING,
   },
 
+  fieldLength: {
+    type: Sequelize.STRING,
+  },
+
   templeteId: {
     type: Sequelize.INTEGER,
     allowNull: false,

@@ -21,6 +21,7 @@ const editTemplateData = require("../controllers/Templete/editTemplateData");
 const deleteTemplate = require("../controllers/Templete/deleteTemplate");
 const updatedDetails = require("../controllers/Templete/updatedDetails");
 const userDetails = require("../controllers/Templete/userDetails");
+const editAssignedTask = require("../controllers/Templete/editAssignedTask");
 
 const router = express.Router();
 
@@ -46,5 +47,6 @@ router.post("/duplicate/data", authMiddleware, duplicateFinder);
 router.post("/delete/duplicate", authMiddleware, deleteDuplicateData);
 router.post("/update/duplicatedata", authMiddleware, editDuplicateData);
 router.post("/delete/template/:id", authMiddleware, deleteTemplate); //templateId
+router.post("/edit/assigned/task", authMiddleware, editAssignedTask); //assignedTaskId //userId
 
 module.exports = router;

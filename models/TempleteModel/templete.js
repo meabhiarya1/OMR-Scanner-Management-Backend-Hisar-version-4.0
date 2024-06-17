@@ -22,10 +22,7 @@ const Templete = sequelize.define("templetes", {
   typeOption: {
     type: Sequelize.STRING,
   },
-  // rollNumberRange: {
-  //   type: Sequelize.STRING,
-  //   defaultValue: null,
-  // },
+
 });
 
 module.exports = Templete;
