@@ -1,18 +1,18 @@
 const AssignData = require("../../models/TempleteModel/assigndata");
 
 const editAssignedTask = async (req, res) => {
-  const { assignId, userId } = req.body;
+  const { assignedTaskId, userId } = req.body;
 
   try {
     // Update the userId for the record with the specified assignId
     const [updated] = await AssignData.update(
       { userId: userId }, // Update the userId
-      { where: { id: assignId } } // Filter by assignId
+      { where: { id: assignedTaskId } } // Filter by assignId
     );
 
     if (updated) {
       // Fetch the updated task to return in the response
-      const updatedTask = await AssignData.findOne({ where: { id: assignId } });
+      const updatedTask = await AssignData.findOne({ where: { id: assignedTaskId } });
       res.status(200).json({ message: "Updated successfully" });
     } else {
       res.status(404).json({ message: "Task not found" });
