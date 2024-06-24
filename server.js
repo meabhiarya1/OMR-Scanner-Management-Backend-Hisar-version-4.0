@@ -18,6 +18,7 @@ const bcrypt = require("bcryptjs");
 const Assigndata = require("./models/TempleteModel/assigndata");
 const RowIndexData = require("./models/TempleteModel/rowIndexData");
 const ImageDataPath = require("./models/TempleteModel/templeteImages");
+const MappedData = require("./models/TempleteModel/mappedData");
 const builtPath = path.join(__dirname, "./build");
 
 //middlewares
@@ -35,7 +36,7 @@ const imageDirectoryPath = path.join(
 );
 // Serve static files from the 'extractedFiles' directory
 app.use("/images", express.static(imageDirectoryPath));
-app.use('/images', express.static(path.join(__dirname, 'extractedFiles')));
+app.use("/images", express.static(path.join(__dirname, "extractedFiles")));
 app.use(express.static(builtPath));
 
 app.use("/users", userRoutes);
@@ -115,6 +116,22 @@ UpdatedData.belongsTo(User, {
 User.hasMany(UpdatedData, {
   foreignKey: {
     name: "userId",
+    allowNull: false,
+  },
+  onUpdate: "CASCADE",
+});
+
+Templete.hasMany(MappedData, {
+  foreignKey: {
+    name: "templeteId",
+    allowNull: false,
+  },
+  onUpdate: "CASCADE",
+});
+
+MappedData.belongsTo(Templete, {
+  foreignKey: {
+    name: "templeteId",
     allowNull: false,
   },
   onUpdate: "CASCADE",

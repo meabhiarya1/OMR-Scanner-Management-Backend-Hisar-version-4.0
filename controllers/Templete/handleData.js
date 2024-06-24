@@ -2,6 +2,7 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const Files = require("../../models/TempleteModel/files");
+const MappedData = require("../../models/TempleteModel/mappedData");
 const jsonToCsv = require("../../services/json_to_csv");
 const csvToJson = require("../../services/csv_to_json");
 
@@ -21,7 +22,7 @@ const handleData = async (req, res, next) => {
     }
 
     Files.findOne({ where: { id: mappedData.fileId } }).then((fileData) => {
-      // console.log(fileData.csvFile)
+      // console.log(fileData.templeteId)
       if (!fileData.csvFile) {
         return res.status(404).json({ error: "File not exists" });
       }
@@ -74,6 +75,16 @@ const handleData = async (req, res, next) => {
         return acc;
       }, {});
 
+      // Save association data to MappedData model
+      Promise.all(
+        Object.keys(associationData).map(async (key) => {
+          await MappedData.create({
+            key: key,
+            value: associationData[key],
+            templeteId: fileData.templeteId,
+          });
+        })
+      );
       // console.log("associationData", associationData);
 
       data.unshift(associationData);

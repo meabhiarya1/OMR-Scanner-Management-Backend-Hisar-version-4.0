@@ -22,7 +22,7 @@ const deleteTemplate = require("../controllers/Templete/deleteTemplate");
 const updatedDetails = require("../controllers/Templete/updatedDetails");
 const userDetails = require("../controllers/Templete/userDetails");
 const editAssignedTask = require("../controllers/Templete/editAssignedTask");
-
+const getMappedData = require("../controllers/Templete/getMappedData");
 const router = express.Router();
 
 router.get("/get/templetedata/:id", authMiddleware, getTempleteData); //templeteId
@@ -31,6 +31,7 @@ router.get("/get/alltasks", authMiddleware, getAllTask); //admin
 router.get("/get/task/:id", authMiddleware, getTask); //user
 router.get("/download/csv/:id", downloadCsv); //file Id
 router.get("/user/details/:id", userDetails); //userId
+router.get("/get/mappeddata/:id", getMappedData); //templateId
 
 router.post("/updated/details", authMiddleware, updatedDetails); //userId
 router.post("/edit/template/:id", authMiddleware, editTemplateData); //template Id
