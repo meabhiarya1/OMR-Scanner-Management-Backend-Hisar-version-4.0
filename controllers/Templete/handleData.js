@@ -48,6 +48,9 @@ const handleData = async (req, res, next) => {
       where: { templeteId: fileData.templeteId },
     });
 
+    // Log existing mapped data entries
+    // console.log("Existing mapped data entries:", mappedDataValues);
+
     // Remove mapped data entries if they exist
     if (mappedDataValues && mappedDataValues.length > 0) {
       await MappedData.destroy({
@@ -62,6 +65,9 @@ const handleData = async (req, res, next) => {
       return acc;
     }, {});
 
+    // Log association data to be saved
+    // console.log("Association data to be saved:", associationData);
+
     // Save association data to MappedData model
     await Promise.all(
       Object.keys(associationData).map(async (key) => {
@@ -72,6 +78,13 @@ const handleData = async (req, res, next) => {
         });
       })
     );
+
+    // Fetch mapped data entries again to verify saving
+    const savedMappedDataValues = await MappedData.findAll({
+      where: { templeteId: fileData.templeteId },
+    });
+    // Log saved mapped data entries
+    // console.log("Saved mapped data entries:", savedMappedDataValues);
 
     // Add the associationData as the first row in the data array
     data.unshift(associationData);
