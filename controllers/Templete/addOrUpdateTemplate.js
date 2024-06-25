@@ -102,6 +102,7 @@ const addOrUpdateTemplate = async (req, res) => {
         name: templateData.name,
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
+        patternDefinition: templateData.patternDefinition
         // rollNumberRange: templateData.rollNumberRange,
       });
 
@@ -115,6 +116,7 @@ const addOrUpdateTemplate = async (req, res) => {
         TempleteType: "Data Entry",
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
+        patternDefinition: templateData.patternDefinition
         // rollNumberRange: templateData.rollNumberRange,
       });
     }

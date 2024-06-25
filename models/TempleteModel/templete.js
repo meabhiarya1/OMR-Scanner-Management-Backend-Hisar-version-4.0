@@ -23,6 +23,9 @@ const Templete = sequelize.define("templetes", {
     type: Sequelize.STRING,
   },
 
+  patternDefinition: {
+    type: Sequelize.STRING,
+  },
 });
 
 module.exports = Templete;
