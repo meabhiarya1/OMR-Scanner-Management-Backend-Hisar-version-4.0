@@ -1,7 +1,6 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
-const { Parser } = require("json2csv");
 const Files = require("../../models/TempleteModel/files");
 const Templete = require("../../models/TempleteModel/templete");
 const FormCheckedData = require("../../models/TempleteModel/formcheckeddata");
@@ -15,19 +14,16 @@ const escapeRegExp = (string) => {
 const getCsvData = async (req, res, next) => {
   try {
     const fileId = req.body?.taskData?.fileId;
+
     if (!fileId) {
       return res.status(400).json({ error: "File ID not provided" });
     }
 
+    // Fetch file data
     const fileData = await Files.findOne({
       where: { id: fileId },
       include: [
-        {
-          model: Templete,
-          attributes: {
-            include: ["pageCount"],
-          },
-        },
+        { model: Templete, attributes: ["pageCount", "patternDefinition"] },
       ],
     });
 
@@ -39,9 +35,10 @@ const getCsvData = async (req, res, next) => {
     const filePath = path.join(__dirname, "../../csvFile", filename);
 
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: "File not found" });
+      return res.status(404).json({ error: "CSV file not found" });
     }
 
+    // Read and parse CSV file
     let workbook, worksheet;
     try {
       workbook = XLSX.readFile(filePath);
@@ -52,14 +49,13 @@ const getCsvData = async (req, res, next) => {
       return res.status(500).json({ error: "Error reading CSV file" });
     }
 
-    const { min, max } = req.body?.taskData || {};
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+    const { min, max } = req.body.taskData || {};
     const minIndex = parseInt(min);
     const maxIndex = parseInt(max);
 
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-      defval: "",
-    });
-
+    // Validate min and max indices
     if (
       isNaN(minIndex) ||
       isNaN(maxIndex) ||
@@ -72,14 +68,14 @@ const getCsvData = async (req, res, next) => {
       return res.status(400).json({ error: "Invalid min or max value" });
     }
 
-    const imgageColNameFinder = Object.values(jsonData[0]);
-
+    // Determine image column keys
+    const imageColNameFinder = Object.values(jsonData[0]);
     let imageColNameContainer = [];
     let count = 1;
 
     while (true) {
       const imageName = `Image${count}`;
-      if (imgageColNameFinder.includes(imageName)) {
+      if (imageColNameFinder.includes(imageName)) {
         imageColNameContainer.push(imageName);
         count++;
       } else {
@@ -100,20 +96,21 @@ const getCsvData = async (req, res, next) => {
     });
 
     const patternDefinition = fileData.templete.patternDefinition;
+
     const legalCheckData = await MetaData.findAll({
       where: {
         [Op.and]: [
-          { templeteId: fileData.templete.id },
+          { templeteId: fileData.templeteId },
           { fieldType: "formField" },
         ],
       },
     });
 
     const resultLegalData = legalCheckData.map((item) => ({
-      attribute: item.dataValues.attribute,
-      dataFieldType: item.dataValues.dataFieldType,
-      fieldRange: item.dataValues.fieldRange,
-      fieldLength: item.dataValues.fieldLength,
+      attribute: item.attribute,
+      dataFieldType: item.dataFieldType,
+      fieldRange: item.fieldRange,
+      fieldLength: item.fieldLength,
     }));
 
     let definedPattern;
@@ -127,23 +124,23 @@ const getCsvData = async (req, res, next) => {
         .json({ error: "Invalid pattern definition in database" });
     }
 
+    // Compile conditions from form checked data
     const colConditions = await FormCheckedData.findAll({
       where: { fileID: fileId },
     });
-
+    
     const colConditionsKeyValue = await FormCheckedData.findAll({
-      where: {
-        fileID: fileId, // Replace with your fileId variable if it's dynamic
-      },
-      attributes: ["key", "value"], // Specify the columns you want to retrieve
+      where: { fileID: fileId },
+      attributes: ["key", "value"],
     });
 
-    // Map key and value into an array of objects
-    const keyValuePairArray = colConditionsKeyValue.map((item) => ({
-      csvHeaderkey: item.key,
-      userKey: item.value,
+    // Map key and value pairs
+    const keyValuePairArray = colConditionsKeyValue.map(({ key, value }) => ({
+      csvHeaderkey: key,
+      userKey: value,
     }));
 
+    // Function to check conditions
     const conditionFunc = (obj, legal, blank, pattern) => {
       const isBlank = (value) =>
         value === "" ||
@@ -171,6 +168,7 @@ const getCsvData = async (req, res, next) => {
         if (key === imageColKeyContainer[imageColKeyContainer.length - 1]) {
           break; // Stop at the last key in imageColKeyContainer
         }
+
         const value = obj[key];
 
         if (blank && isBlank(value)) {
@@ -214,6 +212,7 @@ const getCsvData = async (req, res, next) => {
       return false;
     };
 
+    // Filter data based on conditions
     const filteredData = [];
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
 
@@ -233,6 +232,7 @@ const getCsvData = async (req, res, next) => {
       }
     });
 
+    // Return filtered data with header row
     filteredData.unshift(jsonData[0]);
     res.status(200).json(filteredData);
   } catch (error) {
