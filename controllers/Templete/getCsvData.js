@@ -96,6 +96,7 @@ const getCsvData = async (req, res, next) => {
     });
 
     const patternDefinition = fileData.templete.patternDefinition;
+    const blankDefination = fileData.templete.blankDefination;
 
     const legalCheckData = await MetaData.findAll({
       where: {
@@ -128,7 +129,7 @@ const getCsvData = async (req, res, next) => {
     const colConditions = await FormCheckedData.findAll({
       where: { fileID: fileId },
     });
-    
+
     const colConditionsKeyValue = await FormCheckedData.findAll({
       where: { fileID: fileId },
       attributes: ["key", "value"],
@@ -142,12 +143,7 @@ const getCsvData = async (req, res, next) => {
 
     // Function to check conditions
     const conditionFunc = (obj, legal, blank, pattern) => {
-      const isBlank = (value) =>
-        value === "" ||
-        value === " " ||
-        value === "BLANK" ||
-        value === null ||
-        value === undefined;
+      const isBlank = (value) => value === blankDefination;
 
       const matchesPattern = (value) => definedPattern.test(value);
 
