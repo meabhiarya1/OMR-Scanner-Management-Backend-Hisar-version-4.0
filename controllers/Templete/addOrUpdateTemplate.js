@@ -102,7 +102,10 @@ const addOrUpdateTemplate = async (req, res) => {
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
         patternDefinition: templateData.patternDefinition,
-        blankDefination: templateData.blankDefination,
+        blankDefination:
+          templateData.blankDefination === ""
+            ? "space"
+            : templateData.blankDefination,
         isPermittedToEdit: templateData.isPermittedToEdit,
       });
 
@@ -117,7 +120,10 @@ const addOrUpdateTemplate = async (req, res) => {
         pageCount: templateData.pageCount,
         typeOption: templateData.typeOption,
         patternDefinition: templateData.patternDefinition,
-        blankDefination: templateData.blankDefination,
+        blankDefination:
+          templateData.blankDefination === ""
+            ? "space"
+            : templateData.blankDefination,
         isPermittedToEdit: templateData.isPermittedToEdit,
       });
     }

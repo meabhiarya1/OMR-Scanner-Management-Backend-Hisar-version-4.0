@@ -23,9 +23,16 @@ const getCsvData = async (req, res, next) => {
     const fileData = await Files.findOne({
       where: { id: fileId },
       include: [
-        { model: Templete, attributes: ["pageCount", "patternDefinition"] },
+        {
+          model: Templete,
+          attributes: ["pageCount", "patternDefinition", "blankDefination"],
+        },
       ],
     });
+
+    // console.log(fileData.templete.patternDefinition)
+    // console.log(fileData.templete.blankDefination)
+    // return
 
     if (!fileData) {
       return res.status(404).json({ error: "File not found" });
@@ -143,7 +150,8 @@ const getCsvData = async (req, res, next) => {
 
     // Function to check conditions
     const conditionFunc = (obj, legal, blank, pattern) => {
-      const isBlank = (value) => value === blankDefination;
+      const isBlank = (value) =>
+        blankDefination === "space" ? value === " " : value === blankDefination;
 
       const matchesPattern = (value) => definedPattern.test(value);
 
@@ -214,7 +222,6 @@ const getCsvData = async (req, res, next) => {
 
     minToMaxData.forEach((obj, index) => {
       const conditions = colConditions[index];
-
       if (
         conditions &&
         conditionFunc(
@@ -228,7 +235,7 @@ const getCsvData = async (req, res, next) => {
       }
     });
 
-    if(filteredData.length === 0){
+    if (filteredData.length === 0) {
       return res.status(500).json({ error: "No Matching Data Found" });
     }
 
