@@ -8,12 +8,20 @@ const getImage = async (req, res, next) => {
     return res.status(403).json({ message: "User not authorized" });
   }
 
+  //this getimage controller only updating the currentindex not responding the images it is served as staticallly
+
   try {
     const { imageNameArray, id, rowIndex } = req.body;
 
-    if (!imageNameArray || !Array.isArray(imageNameArray) || imageNameArray.length === 0) {
-      return res.status(400).json({ error: "ImageNameArray is missing or empty" });
-    }
+    // if (
+    //   !imageNameArray ||
+    //   !Array.isArray(imageNameArray) ||
+    //   imageNameArray.length === 0
+    // ) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "ImageNameArray is missing or empty" });
+    // }
 
     const assigndataInstance = await Assigndata.findOne({ where: { id } });
 
@@ -25,34 +33,41 @@ const getImage = async (req, res, next) => {
     await assigndataInstance.save();
 
     const errors = [];
-    const imageReadPromises = imageNameArray.map(async (imageName) => {
-      if (!imageName) {
-        errors.push("ImageName is missing");
-        return null; // Handle missing image name
-      }
+    // const imageReadPromises = imageNameArray.map(async (imageName) => {
+    //   if (!imageName) {
+    //     errors.push("ImageName is missing");
+    //     return null; // Handle missing image name
+    //   }
 
-      const sourceFilePath = path.join(__dirname, "..", "..", "extractedFiles", imageName);
+    //   const sourceFilePath = path.join(
+    //     __dirname,
+    //     "..",
+    //     "..",
+    //     "extractedFiles",
+    //     imageName
+    //   );
+    //   return sourceFilePath;
+    //   // console.log(sourceFilePath)
 
-      try {
-        await fs.access(sourceFilePath); // Check if the file exists
-        const image = await fs.readFile(sourceFilePath); // Read the file
-        return { base64Image: image.toString("base64") }; // Convert to Base64
-      } catch (error) {
-        errors.push(`File not found: ${imageName}`);
-        return null; // Handle file not found
-      }
-    });
+    //   // try {
+    //   //   return await fs.access(sourceFilePath); // Check if the file exists
+    //   // const image = await fs.readFile(sourceFilePath); // Read the file
+    //   // return { base64Image: image.toString("base64") }; // Convert to Base64
+    //   // } catch (error) {
+    //   //   errors.push(`File not found: ${imageName}`);
+    //   //   return null; // Handle file not found
+    //   // }
+    // });
 
-    const arrayOfImages = await Promise.all(imageReadPromises);
-    
+    // const arrayOfImages = await Promise.all(imageReadPromises);
+
     // Filter out any null values (failed reads)
-    const filteredImages = arrayOfImages.filter(image => image !== null);
+    // const filteredImages = arrayOfImages.filter(image => image !== null);
 
     if (errors.length > 0) {
       return res.status(404).json({ errors });
     }
-
-    res.status(200).json({ arrayOfImages: filteredImages });
+    res.status(200).json({ message: "CurrentIndex Updated Successfully" });
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({ error: "Internal server error" });
