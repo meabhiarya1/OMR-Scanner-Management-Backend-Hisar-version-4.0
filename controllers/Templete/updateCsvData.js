@@ -6,6 +6,25 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const path = require("path");
 const jsonToCsv = require("../../services/json_to_csv");
+const { LRUCache } = require("lru-cache");
+
+// Configure the LRU cache
+const cache = new LRUCache({
+  max: 1000, // Increase max number of items if needed
+  maxSize: 100 * 1024 * 1024, // Increase maximum cache size to 100 MB
+  sizeCalculation: (value, key) => {
+    return JSON.stringify(value.csvData).length;
+  },
+  ttl: 1000 * 60 * 60 * 2, // Increase TTL to 2 hours if needed
+});
+
+const checkAndAddColumn = (csvData, columnName, index) => {
+  if (index === -1) {
+    csvData[0].push(columnName);
+    return csvData[0].length - 1;
+  }
+  return index;
+};
 
 const updateCsvData = async (req, res, next) => {
   const { updatedData, index, updatedColumn } = req.body;
@@ -19,10 +38,62 @@ const updateCsvData = async (req, res, next) => {
   delete updatedData.rowIndex;
 
   try {
-    const fileData = await Files.findOne({ where: { id: fileId } });
-    if (!fileData) {
-      return res.status(404).json({ error: "File not found" });
+    // Check if file data is already in cache
+    if (!cache.has(fileId)) {
+      const fileData = await Files.findOne({ where: { id: fileId } });
+      if (!fileData) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      const fileName = fileData.csvFile;
+      const filePath = path.join(__dirname, "../../csvFile", fileName);
+
+      const workbook = XLSX.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const csvData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Check and add necessary columns
+      const userDetailsIndex = checkAndAddColumn(
+        csvData,
+        "User Details",
+        csvData[0].indexOf("User Details")
+      );
+      const previousValueIndex = checkAndAddColumn(
+        csvData,
+        "Previous Values",
+        csvData[0].indexOf("Previous Values")
+      );
+      const updatedValueIndex = checkAndAddColumn(
+        csvData,
+        "Updated Values",
+        csvData[0].indexOf("Updated Values")
+      );
+      const updatedColIndex = checkAndAddColumn(
+        csvData,
+        "Updated Col. Name",
+        csvData[0].indexOf("Updated Col. Name")
+      );
+
+      // Store in cache along with column indices
+      cache.set(fileId, {
+        csvData,
+        filePath,
+        userDetailsIndex,
+        previousValueIndex,
+        updatedValueIndex,
+        updatedColIndex,
+      });
     }
+
+    const {
+      csvData,
+      filePath,
+      userDetailsIndex,
+      previousValueIndex,
+      updatedValueIndex,
+      updatedColIndex,
+    } = cache.get(fileId);
 
     const assignData = await Assigndata.findOne({
       where: { userId: req.userId },
@@ -32,61 +103,23 @@ const updateCsvData = async (req, res, next) => {
       where: { id: req.userId },
     });
 
-    const { min, max } = assignData;
+    const { min } = assignData;
     const minIndex = parseInt(min);
-    const fileName = fileData.csvFile;
-    const filePath = path.join(__dirname, "../../csvFile", fileName);
 
-    const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const csvData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-    const checkAndAddColumn = (columnName, index) => {
-      if (index === -1) {
-        csvData[0].push(columnName);
-        return csvData[0].length - 1;
-      }
-      return index;
-    };
-
-    const userDetailsIndex = checkAndAddColumn(
-      "User Details",
-      csvData[0].indexOf("User Details")
-    );
-    const previousValueIndex = checkAndAddColumn(
-      "Previous Values",
-      csvData[0].indexOf("Previous Values")
-    );
-    const updatedValueIndex = checkAndAddColumn(
-      "Updated Values",
-      csvData[0].indexOf("Updated Values")
-    );
-    const updatedColIndex = checkAndAddColumn(
-      "Updated Col. Name",
-      csvData[0].indexOf("Updated Col. Name")
-    );
-
-    csvData.forEach((row, i) => {
-      if (i === 0) return; // Skip headers row
-      row[userDetailsIndex] = row[userDetailsIndex] || "No change";
-      row[previousValueIndex] = row[previousValueIndex] || "No change";
-      row[updatedValueIndex] = row[updatedValueIndex] || "No change";
-      row[updatedColIndex] = row[updatedColIndex] || "No change";
-    });
-
-    csvData[index + minIndex - 1] = Object.values(updatedData);
+    // Directly update the specific row using updatedIndex
+    csvData[updatedIndex + minIndex - 1] = Object.values(updatedData);
     const updatedColumns = Object.keys(updatedColumn);
-    csvData[index + minIndex - 1][
+    csvData[updatedIndex + minIndex - 1][
       userDetailsIndex
     ] = `${userDetails.userName}:${userDetails.email}`;
-    csvData[index + minIndex - 1][previousValueIndex] = updatedColumns
+    csvData[updatedIndex + minIndex - 1][previousValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][1])
       .join(",");
-    csvData[index + minIndex - 1][updatedValueIndex] = updatedColumns
+    csvData[updatedIndex + minIndex - 1][updatedValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][0])
       .join(",");
-    csvData[index + minIndex - 1][updatedColIndex] = updatedColumns.join(",");
+    csvData[updatedIndex + minIndex - 1][updatedColIndex] =
+      updatedColumns.join(",");
 
     await UpdatedData.create({
       updatedColumn: updatedColumns.join(","),
@@ -113,6 +146,16 @@ const updateCsvData = async (req, res, next) => {
     }
 
     fs.writeFileSync(filePath, updatedCSVContent, { encoding: "utf8" });
+
+    // Update cache with new data
+    cache.set(fileId, {
+      csvData,
+      filePath,
+      userDetailsIndex,
+      previousValueIndex,
+      updatedValueIndex,
+      updatedColIndex,
+    });
 
     res.status(200).json({ message: "File Updated Successfully" });
   } catch (error) {
