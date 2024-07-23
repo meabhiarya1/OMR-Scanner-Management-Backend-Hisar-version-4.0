@@ -121,16 +121,16 @@ const getCsvData = async (req, res, next) => {
       fieldLength: item.fieldLength,
     }));
 
-    let definedPattern;
+    // let definedPattern;
 
-    try {
-      definedPattern = new RegExp(escapeRegExp(patternDefinition));
-    } catch (e) {
-      console.error("Invalid regular expression pattern:", e);
-      return res
-        .status(400)
-        .json({ error: "Invalid pattern definition in database" });
-    }
+    // try {
+    //   definedPattern = new RegExp(escapeRegExp(patternDefinition));
+    // } catch (e) {
+    //   console.error("Invalid regular expression pattern:", e);
+    //   return res
+    //     .status(400)
+    //     .json({ error: "Invalid pattern definition in database" });
+    // }
 
     // Compile conditions from form checked data
     const colConditions = await FormCheckedData.findAll({
@@ -149,11 +149,95 @@ const getCsvData = async (req, res, next) => {
     }));
 
     // Function to check conditions
+    // const conditionFunc = (obj, legal, blank, pattern) => {
+    //   const isBlank = (value) =>
+    //     blankDefination === "space"
+    //       ? value === "" || value === " "
+    //       : value === blankDefination;
+
+    //   const regexPattern = patternDefinition.replace(/\*/g, "\\d");
+    //   const definedPattern = new RegExp(`^${regexPattern}$`);
+
+    //   const matchesPattern = (value) => {
+    //     // Convert value to a string if it isn't already
+    //     const stringValue = String(value);
+    //     return definedPattern.test(stringValue);
+    //   };
+
+    //   const checkNumberRange = (value, range) => {
+    //     if (!value || isNaN(value)) return false;
+    //     const [min, max] = range.split("--").map(Number);
+    //     const numValue = Number(value);
+    //     return numValue >= min && numValue <= max;
+    //   };
+
+    //   const checkFieldLength = (value, length) => {
+    //     if (!value) return false;
+    //     if (typeof value !== "string") value = String(value);
+    //     return value.length <= Number(length);
+    //   };
+
+    //   for (const key in obj) {
+    //     if (key === imageColKeyContainer[imageColKeyContainer.length - 1]) {
+    //       break; // Stop at the last key in imageColKeyContainer
+    //     }
+
+    //     const value = obj[key];
+
+    //     // if (blank && isBlank(value)) {
+    //     //   return true;
+    //     // }
+
+    //     if (pattern && matchesPattern(value)) {
+    //       return true;
+    //     }
+
+    //     if (legal) {
+    //       const matchingPair = keyValuePairArray.find(
+    //         (pair) => pair.userKey === key
+    //       );
+
+    //       if (matchingPair) {
+    //         const { csvHeaderkey } = matchingPair;
+    //         const attributeInfo = resultLegalData.find(
+    //           (item) => item.attribute === csvHeaderkey
+    //         );
+
+    //         if (attributeInfo) {
+    //           const { dataFieldType, fieldRange, fieldLength } = attributeInfo;
+
+    //           if (dataFieldType === "number") {
+    //             if (!checkNumberRange(value, fieldRange)) {
+    //               return true;
+    //             }
+    //             if (!checkFieldLength(value, fieldLength)) {
+    //               return true;
+    //             }
+    //           } else if (dataFieldType === "text") {
+    //             if (!checkFieldLength(value, fieldLength)) {
+    //               return true;
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    //   return false;
+    // };
+
     const conditionFunc = (obj, legal, blank, pattern) => {
       const isBlank = (value) =>
-        blankDefination === "space" ? value === " " : value === blankDefination;
+        blankDefination === "space"
+          ? value === "" || value === " "
+          : value === blankDefination;
 
-      const matchesPattern = (value) => definedPattern.test(value);
+      const regexPattern = patternDefinition.replace(/\*/g, "\\d");
+      const definedPattern = new RegExp(`^${regexPattern}$`);
+      const matchesPattern = (value) => {
+        // Convert value to a string if it isn't already
+        const stringValue = String(value);
+        return definedPattern.test(stringValue);
+      };
 
       const checkNumberRange = (value, range) => {
         if (!value || isNaN(value)) return false;
@@ -174,15 +258,12 @@ const getCsvData = async (req, res, next) => {
         }
 
         const value = obj[key];
-
-        if (blank && isBlank(value)) {
-          return true;
-        }
-
         if (pattern && matchesPattern(value)) {
           return true;
         }
-
+        if (blank && isBlank(value)) {
+          return true;
+        }
         if (legal) {
           const matchingPair = keyValuePairArray.find(
             (pair) => pair.userKey === key
@@ -219,7 +300,6 @@ const getCsvData = async (req, res, next) => {
     // Filter data based on conditions
     const filteredData = [];
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
-
     minToMaxData.forEach((obj, index) => {
       const conditions = colConditions[index];
       if (
