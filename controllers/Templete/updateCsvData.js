@@ -107,18 +107,18 @@ const updateCsvData = async (req, res, next) => {
     const minIndex = parseInt(min);
 
     // Directly update the specific row using updatedIndex
-    csvData[updatedIndex + minIndex - 1] = Object.values(updatedData);
+    csvData[updatedIndex + minIndex] = Object.values(updatedData);
     const updatedColumns = Object.keys(updatedColumn);
-    csvData[updatedIndex + minIndex - 1][
+    csvData[updatedIndex + minIndex][
       userDetailsIndex
     ] = `${userDetails.userName}:${userDetails.email}`;
-    csvData[updatedIndex + minIndex - 1][previousValueIndex] = updatedColumns
+    csvData[updatedIndex + minIndex][previousValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][1])
       .join(",");
-    csvData[updatedIndex + minIndex - 1][updatedValueIndex] = updatedColumns
+    csvData[updatedIndex + minIndex][updatedValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][0])
       .join(",");
-    csvData[updatedIndex + minIndex - 1][updatedColIndex] =
+    csvData[updatedIndex + minIndex][updatedColIndex] =
       updatedColumns.join(",");
 
     await UpdatedData.create({
