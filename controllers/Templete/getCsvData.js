@@ -218,6 +218,7 @@ const getCsvData = async (req, res, next) => {
     // Filter data based on conditions
     const filteredData = [];
     const minToMaxData = jsonData.slice(minIndex, maxIndex + 1);
+    
     minToMaxData.forEach((obj, rowIndex) => {
       // for (const key in obj) {
       //   if (key === "BARCODE" && obj[key] === "3082*53") {
@@ -226,15 +227,17 @@ const getCsvData = async (req, res, next) => {
       //   }
       // }
       let wantToPush = false;
+
       colConditions.forEach((conditions, colIndex) => {
-        if (
-          obj[colIndex] ===
-          imageColKeyContainer[imageColKeyContainer.length - 1]
-        ) {
-          return;
-        }
+        const csvColName = conditions.dataValues.key;
+        // if (
+        //   obj[csvColName] ===
+        //   imageColKeyContainer[imageColKeyContainer.length - 1]
+        // ) {
+        //   return;
+        // }
         const checkingConditions = conditionFunc(
-          obj[colIndex],
+          obj[csvColName],
           conditions.legal,
           conditions.blank,
           conditions.pattern
