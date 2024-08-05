@@ -4,19 +4,17 @@ const sequelize = require("../../utils/database");
 
 const UpdatedDetails = sequelize.define("updatedDetails", {
   updatedColumn: {
-    type: Sequelize.STRING,
+    type: Sequelize.TEXT,
   },
   previousData: {
-    type: Sequelize.STRING,
+    type: Sequelize.TEXT,
   },
   currentData: {
     type: Sequelize.STRING,
   },
-
   rowIndex: {
     type: Sequelize.STRING,
   },
-
   fileId: {
     type: Sequelize.STRING,
   },

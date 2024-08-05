@@ -10,12 +10,12 @@ const { LRUCache } = require("lru-cache");
 
 // Configure the LRU cache
 const cache = new LRUCache({
-  max: 1000, // Increase max number of items if needed
-  maxSize: 100 * 1024 * 1024, // Increase maximum cache size to 100 MB
+  max: 1000, // Maximum number of items in the cache
+  maxSize: 100 * 1024 * 1024, // Maximum cache size of 100 MB
   sizeCalculation: (value, key) => {
-    return JSON.stringify(value.csvData).length;
+    return JSON.stringify(value.csvData).length; // Calculate size based on JSON string length
   },
-  ttl: 1000 * 60 * 60 * 2, // Increase TTL to 2 hours if needed
+  ttl: 1000 * 60 * 60 * 2, // Time-to-live for cache entries: 2 hours
 });
 
 const checkAndAddColumn = (csvData, columnName, index) => {
@@ -33,8 +33,8 @@ const updateCsvData = async (req, res, next) => {
     return res.status(300).json({ message: "Nothing to Update" });
   }
 
-  const fileId = req.params.id;
-  const updatedIndex = updatedData.rowIndex;
+  const fileId = parseInt(req.params.id, 10); // Ensure fileId is an integer
+  const updatedIndex = parseInt(updatedData.rowIndex, 10); // Ensure rowIndex is an integer
   delete updatedData.rowIndex;
 
   try {
@@ -104,7 +104,7 @@ const updateCsvData = async (req, res, next) => {
     });
 
     const { min } = assignData;
-    const minIndex = parseInt(min);
+    const minIndex = parseInt(min, 10); // Ensure minIndex is an integer
 
     // Directly update the specific row using updatedIndex
     csvData[updatedIndex + minIndex] = Object.values(updatedData);
