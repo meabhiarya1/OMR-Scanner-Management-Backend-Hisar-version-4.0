@@ -36,6 +36,7 @@ const updatedDetails = async (req, res) => {
       previousData: [],
       currentData: [],
       rowIndex: [],
+      imageNames: [],
     };
 
     userData.forEach((data) => {
@@ -44,12 +45,14 @@ const updatedDetails = async (req, res) => {
           data.updatedColumn &&
           data.previousData &&
           data.currentData &&
-          data.rowIndex
+          data.rowIndex &&
+          data.imageNames
         ) {
           response.updatedColumn.push(data.updatedColumn);
           response.previousData.push(data.previousData);
           response.currentData.push(data.currentData);
           response.rowIndex.push(data.rowIndex);
+          response.imageNames.push(data.imageNames);
         }
       } catch (error) {
         return res.status(500).json({ error: "Incomplete data entry found" });
@@ -66,6 +69,7 @@ const updatedDetails = async (req, res) => {
       previousData: [],
       currentData: [],
       rowIndex: [],
+      imageNames: [],
     };
     for (let i = 0; i < response.rowIndex.length; i++) {
       const rowIndexValue = Number(response.rowIndex[i]); // Convert each element to a number
@@ -76,6 +80,7 @@ const updatedDetails = async (req, res) => {
         filteredResponse.previousData.push(response.previousData[i]);
         filteredResponse.currentData.push(response.currentData[i]);
         filteredResponse.rowIndex.push(response.rowIndex[i]);
+        filteredResponse.imageNames.push(response.imageNames[i]);
       }
     }
 

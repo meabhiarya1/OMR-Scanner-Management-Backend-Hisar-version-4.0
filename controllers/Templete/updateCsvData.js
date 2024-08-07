@@ -27,7 +27,8 @@ const checkAndAddColumn = (csvData, columnName, index) => {
 };
 
 const updateCsvData = async (req, res, next) => {
-  const { updatedData, index, updatedColumn } = req.body;
+  const { updatedData, index, updatedColumn, imageNameArray } = req.body;
+
   if (updatedColumn === null) {
     return res.status(300).json({ message: "Nothing to Update" });
   }
@@ -120,8 +121,7 @@ const updateCsvData = async (req, res, next) => {
     csvData[updatedIndex + 1][updatedValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][0])
       .join(",");
-    csvData[updatedIndex + 1][updatedColIndex] =
-      updatedColumns.join(",");
+    csvData[updatedIndex + 1][updatedColIndex] = updatedColumns.join(",");
 
     await UpdatedData.create({
       updatedColumn: updatedColumns.join(","),
@@ -131,6 +131,7 @@ const updateCsvData = async (req, res, next) => {
       currentData: updatedColumns.map((key) => updatedColumn[key][0]).join(","),
       fileId: fileId,
       rowIndex: updatedIndex,
+      imageNames: imageNameArray.join(","),
       userId: req.userId,
     });
 

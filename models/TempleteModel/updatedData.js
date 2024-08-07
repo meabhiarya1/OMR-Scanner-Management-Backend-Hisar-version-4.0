@@ -15,6 +15,9 @@ const UpdatedDetails = sequelize.define("updatedDetails", {
   rowIndex: {
     type: Sequelize.STRING,
   },
+  imageNames: {
+    type: Sequelize.STRING,
+  },
   fileId: {
     type: Sequelize.STRING,
   },
