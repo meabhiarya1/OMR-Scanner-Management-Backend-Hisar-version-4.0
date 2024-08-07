@@ -28,7 +28,6 @@ const checkAndAddColumn = (csvData, columnName, index) => {
 
 const updateCsvData = async (req, res, next) => {
   const { updatedData, index, updatedColumn } = req.body;
-
   if (updatedColumn === null) {
     return res.status(300).json({ message: "Nothing to Update" });
   }
@@ -96,7 +95,10 @@ const updateCsvData = async (req, res, next) => {
     } = cache.get(fileId);
 
     const assignData = await Assigndata.findOne({
-      where: { userId: req.userId },
+      where: {
+        userId: req.userId,
+        fileId,
+      },
     });
 
     const userDetails = await UserDetails.findOne({
@@ -107,18 +109,18 @@ const updateCsvData = async (req, res, next) => {
     const minIndex = parseInt(min, 10); // Ensure minIndex is an integer
 
     // Directly update the specific row using updatedIndex
-    csvData[updatedIndex + minIndex] = Object.values(updatedData);
+    csvData[updatedIndex + 1] = Object.values(updatedData);
     const updatedColumns = Object.keys(updatedColumn);
-    csvData[updatedIndex + minIndex][
+    csvData[updatedIndex + 1][
       userDetailsIndex
     ] = `${userDetails.userName}:${userDetails.email}`;
-    csvData[updatedIndex + minIndex][previousValueIndex] = updatedColumns
+    csvData[updatedIndex + 1][previousValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][1])
       .join(",");
-    csvData[updatedIndex + minIndex][updatedValueIndex] = updatedColumns
+    csvData[updatedIndex + 1][updatedValueIndex] = updatedColumns
       .map((key) => updatedColumn[key][0])
       .join(",");
-    csvData[updatedIndex + minIndex][updatedColIndex] =
+    csvData[updatedIndex + 1][updatedColIndex] =
       updatedColumns.join(",");
 
     await UpdatedData.create({

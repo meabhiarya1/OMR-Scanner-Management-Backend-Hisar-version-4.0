@@ -61,6 +61,7 @@ const getCsvData = async (req, res, next) => {
     const { min, max } = req.body.taskData || {};
     const minIndex = parseInt(min);
     const maxIndex = parseInt(max);
+    
 
     // Validate min and max indices
     if (
