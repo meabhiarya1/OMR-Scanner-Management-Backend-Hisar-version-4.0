@@ -37,6 +37,8 @@ const updatedDetails = async (req, res) => {
       currentData: [],
       rowIndex: [],
       imageNames: [],
+      updatedIds: [],
+      isVerified: [],
     };
 
     userData.forEach((data) => {
@@ -46,19 +48,22 @@ const updatedDetails = async (req, res) => {
           data.previousData &&
           data.currentData &&
           data.rowIndex &&
-          data.imageNames
+          data.imageNames &&
+          data.id 
         ) {
           response.updatedColumn.push(data.updatedColumn);
           response.previousData.push(data.previousData);
           response.currentData.push(data.currentData);
           response.rowIndex.push(data.rowIndex);
           response.imageNames.push(data.imageNames);
+          response.updatedIds.push(data.id);
+          response.isVerified.push(data.verified);
         }
       } catch (error) {
         return res.status(500).json({ error: "Incomplete data entry found" });
       }
     });
-
+   
     if (response.updatedColumn.length === 0) {
       return res.status(500).json({ error: "No complete data entries found" });
     }
@@ -70,6 +75,8 @@ const updatedDetails = async (req, res) => {
       currentData: [],
       rowIndex: [],
       imageNames: [],
+      updatedIds: [],
+      isVerified: [],
     };
     for (let i = 0; i < response.rowIndex.length; i++) {
       const rowIndexValue = Number(response.rowIndex[i]); // Convert each element to a number
@@ -81,6 +88,8 @@ const updatedDetails = async (req, res) => {
         filteredResponse.currentData.push(response.currentData[i]);
         filteredResponse.rowIndex.push(response.rowIndex[i]);
         filteredResponse.imageNames.push(response.imageNames[i]);
+        filteredResponse.updatedIds.push(response.updatedIds[i]);
+        filteredResponse.isVerified.push(response.isVerified[i]);
       }
     }
 

@@ -131,7 +131,7 @@ const updateCsvData = async (req, res, next) => {
       currentData: updatedColumns.map((key) => updatedColumn[key][0]).join(","),
       fileId: fileId,
       rowIndex: updatedIndex,
-      imageNames: imageNameArray.join(","),
+      imageNames: imageNameArray.join("-*"),
       userId: req.userId,
     });
 

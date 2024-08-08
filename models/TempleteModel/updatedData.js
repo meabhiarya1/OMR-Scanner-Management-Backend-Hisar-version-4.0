@@ -18,6 +18,10 @@ const UpdatedDetails = sequelize.define("updatedDetails", {
   imageNames: {
     type: Sequelize.STRING,
   },
+  verified: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
   fileId: {
     type: Sequelize.STRING,
   },
