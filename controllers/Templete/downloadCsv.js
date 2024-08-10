@@ -46,16 +46,16 @@ const downloadCsv = async (req, res) => {
     ];
 
     // Filter out the specified columns
-    // const filteredJsonData = jsonData.map((row) => {
-    //   columnsToRemove.forEach((col) => {
-    //     delete row[col];
-    //   });
-    //   return row;
-    // });
+    const filteredJsonData = jsonData.map((row) => {
+      columnsToRemove.forEach((col) => {
+        delete row[col];
+      });
+      return row;
+    });
 
     // Convert filtered JSON data back to CSV
-    // const csvData = jsonToCsv(filteredJsonData);
-    const csvData = jsonToCsv(jsonData);
+    const csvData = jsonToCsv(filteredJsonData);
+    // const csvData = jsonToCsv(jsonData);
 
     // Create a filename with the current date and time
     const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
