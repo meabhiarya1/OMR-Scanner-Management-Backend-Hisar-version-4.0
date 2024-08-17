@@ -2,48 +2,22 @@ const multer = require("multer");
 const XLSX = require("xlsx");
 const Files = require("../../models/TempleteModel/files");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs-extra");
 const unzipper = require("unzipper");
 const { createExtractorFromFile } = require("node-unrar-js");
 const getAllDirectories = require("../../services/directoryFinder");
 const jsonToCsv = require("../../services/json_to_csv");
 
-async function extractArchive(file, destination) {
-  try {
-    const extractor = await createExtractorFromFile({
-      filepath: file,
-      targetPath: destination,
-    });
-    const files = [...extractor.extract().files];
-    return { success: true, files };
-  } catch (err) {
-    console.error("Extraction failed:", err);
-    return { success: false, error: err };
-  }
-}
+// Multer memory storage for chunk uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const ext = ["zip", "zipx", "jar", "apk", "ipa", "cbz", "7z", "rar"];
-    const destinationFolder = ext.includes(file.originalname.split(".").pop())
-      ? "zipFile/"
-      : "csvFile/";
-    if (!fs.existsSync(destinationFolder)) {
-      fs.mkdirSync(destinationFolder);
-    }
-    cb(null, destinationFolder);
-  },
-  filename: function (req, file, cb) {
-    const timestamp = Date.now() / 1000;
-    cb(null, `${timestamp}_${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage: storage }).fields([
-  { name: "csvFile" },
-  { name: "zipFile" },
-]);
-
+/**
+ * Function to process the uploaded CSV file
+ * - Reads the CSV file from the specified path
+ * - Converts the CSV data to JSON and updates image paths
+ * - Saves the updated CSV file back to the original path
+ */
 async function processCSV(filePath, res, req, createdFile, pathDir) {
   if (fs.existsSync(filePath)) {
     const workbook = XLSX.readFile(filePath);
@@ -53,6 +27,8 @@ async function processCSV(filePath, res, req, createdFile, pathDir) {
       raw: true,
       defval: "",
     });
+
+    // Get column names from the request and check for missing columns
     const colNames = req.query.imageNames.split(",");
     const updatedJson = data.map((obj) => obj);
     const missingCols = colNames.filter(
@@ -63,6 +39,8 @@ async function processCSV(filePath, res, req, createdFile, pathDir) {
         error: `Image column name(s) not found: ${missingCols.join(", ")}`,
       });
     }
+
+    // Update image paths in the JSON data
     colNames.forEach((colName) => {
       const column = colName.replaceAll('"', "");
       updatedJson.forEach((obj) => {
@@ -71,11 +49,14 @@ async function processCSV(filePath, res, req, createdFile, pathDir) {
         obj[column] = `${pathDir}/${filename}`;
       });
     });
+
+    // Delete the old CSV file and save the updated content
     fs.unlinkSync(filePath);
     const updatedCSVContent = jsonToCsv(updatedJson);
     fs.writeFileSync(filePath, updatedCSVContent, {
       encoding: "utf8",
     });
+
     res.status(200).json({ fileId: createdFile.id });
     console.log("File processed successfully");
   } else {
@@ -83,109 +64,202 @@ async function processCSV(filePath, res, req, createdFile, pathDir) {
   }
 }
 
-const handleUpload = async (req, res, next) => {
+/**
+ * Function to save the uploaded chunk to a specified directory
+ */
+async function saveChunk(chunkDir, chunkIndex, buffer) {
+  const chunkFileName = `${chunkIndex}.chunk`;
+  const chunkFilePath = path.join(chunkDir, chunkFileName);
+
+  console.log("Saving chunk file to:", chunkFilePath);
+  await fs.writeFile(chunkFilePath, buffer);
+
+  if (!fs.existsSync(chunkFilePath)) {
+    console.error("Chunk file write failed:", chunkFilePath);
+    throw new Error("Failed to save chunk file.");
+  }
+}
+
+/**
+ * Function to merge all uploaded chunks into a single file
+ */
+async function mergeChunks(chunkDir, uploadDir, zipFileName, totalChunks) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const finalFilePath = path.join(uploadDir, `${timestamp}_${zipFileName}`);
+  const writeStream = fs.createWriteStream(finalFilePath);
+
+  for (let i = 0; i < totalChunks; i++) {
+    const chunkPath = path.join(chunkDir, `${i}.chunk`);
+    console.log("Reading chunk from:", chunkPath);
+    const data = await fs.readFile(chunkPath);
+    const canWrite = writeStream.write(data);
+
+    if (!canWrite) {
+      await new Promise((resolve) => writeStream.once("drain", resolve));
+    }
+
+    await fs.remove(chunkPath);
+  }
+
+  writeStream.end();
+  return finalFilePath;
+}
+
+/**
+ * Function to extract the contents of the ZIP file to a destination folder
+ * - Added error handling for RAR files
+ */
+async function extractZipFile(finalFilePath, destinationFolderPath) {
+  // Ensure destination folder exists
+  await fs.ensureDir(destinationFolderPath);
+
+  // Check if the uploaded file is a ZIP file
+  const fileExtension = path.extname(finalFilePath).toLowerCase();
+  if (fileExtension === ".rar") {
+    try {
+      const extractor = await createExtractorFromFile({
+        filepath: finalFilePath,
+        targetPath: destinationFolderPath,
+      });
+      const files = [...extractor.extract().files];
+      return { success: true, files };
+    } catch (err) {
+      console.error("Extraction failed:", err);
+      return { success: false, error: err };
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    fs.createReadStream(finalFilePath)
+      .pipe(unzipper.Extract({ path: destinationFolderPath }))
+      .on("close", resolve)
+      .on("error", (err) => {
+        console.error("Extraction error:", err);
+        reject(
+          new Error("Error during ZIP extraction. Make sure the file is valid.")
+        );
+      });
+  });
+}
+
+/**
+ * Main handler function for uploading files
+ * - Validates user role
+ * - Handles file uploads in chunks and processes them
+ * - Merges chunks and extracts ZIP files
+ * - Processes CSV files after extraction
+ */
+const handleUpload = async (req, res) => {
+  // Step 1: Check user role
   const userRole = req.role;
   if (userRole !== "Admin") {
     return res
       .status(403)
       .json({ message: "You don't have access for performing this action" });
   }
-  try {
-    await new Promise((resolve, reject) => {
-      upload(req, res, async function (err) {
-        if (err) {
-          console.error("Error uploading files:", err);
-          return reject("Error uploading files");
+
+  // Step 2: Configure Multer for chunk and CSV file upload
+  const uploadMiddleware = upload.fields([
+    { name: "chunk", maxCount: 1 },
+    { name: "csvFile", maxCount: 1 },
+  ]);
+
+  // Step 3: Handle the file upload process
+  uploadMiddleware(req, res, async (err) => {
+    if (err) {
+      console.error("Multer Error:", err);
+      return res.status(400).json({ error: "Error uploading file." });
+    }
+
+    const { id } = req.params;
+    const { chunkIndex, totalChunks, zipFileName } = req.body;
+
+    if (!req.files.chunk) {
+      return res.status(400).json({ error: "No chunk file uploaded." });
+    }
+
+    const uploadDir = path.join(__dirname, "..", "..", "zipFile");
+    const chunkDir = path.join(uploadDir, "chunks");
+    const csvFileDir = path.join(__dirname, "../../csvFile");
+
+    try {
+      // Ensure necessary directories exist
+      await fs.ensureDir(chunkDir);
+      await fs.ensureDir(uploadDir);
+      await fs.ensureDir(csvFileDir);
+
+      // Step 4: Save the uploaded chunk
+      await saveChunk(chunkDir, chunkIndex, req.files.chunk[0].buffer);
+
+      const timestamp = Math.floor(Date.now() / 1000);
+      const originalCSVFileName = req.files.csvFile[0].originalname;
+      const csvFileName = `${timestamp}_${originalCSVFileName}`;
+      const csvFilePath = path.join(csvFileDir, csvFileName);
+
+      // Step 5: If the last chunk, process merging and extraction
+      if (parseInt(chunkIndex, 10) + 1 === parseInt(totalChunks, 10)) {
+        // Save the CSV file only on the last chunk
+        if (req.files.csvFile) {
+          console.log("Saving CSV file to:", csvFilePath);
+          await fs.writeFile(csvFilePath, req.files.csvFile[0].buffer);
+
+          if (!fs.existsSync(csvFilePath)) {
+            console.error("CSV file write failed:", csvFilePath);
+            return res.status(500).json({ error: "Failed to save CSV file." });
+          }
         }
-        const { csvFile, zipFile } = req.files;
-        const createdFile = await Files.create({
-          csvFile: csvFile[0].filename,
-          zipFile: zipFile[0].filename,
-          templeteId: req.params.id,
-        });
-        const filePath = path.join(
-          __dirname,
-          "../../csvFile",
-          csvFile[0].filename
+
+        // Step 6: Merge all chunks into a final ZIP file
+        const finalFilePath = await mergeChunks(
+          chunkDir,
+          uploadDir,
+          zipFileName,
+          totalChunks
         );
-        const zipFilePath = path.join(
-          __dirname,
-          "../../zipFile",
-          zipFile[0].filename
-        );
-        const fileNameArray = zipFile[0].filename.split(".");
-        const extension = fileNameArray[fileNameArray.length - 1];
-        let destinationFolderPath = path.join(
+
+        // Step 7: Extract the final ZIP file
+        const destinationFolderPath = path.join(
           __dirname,
           "../../extractedFiles",
-          zipFile[0].filename.replace(`.${extension}`, "")
+          `${timestamp}_${zipFileName}`
         );
 
-        if (!fs.existsSync(destinationFolderPath)) {
-          fs.mkdirSync(destinationFolderPath, { recursive: true });
+        await extractZipFile(finalFilePath, destinationFolderPath);
+
+        // Step 8: Process the extracted files and CSV
+        const allDirectories = getAllDirectories(destinationFolderPath);
+
+        if (!allDirectories || allDirectories.length === 0) {
+          console.error("No directories found after extraction.");
+          return res.status(500).json({
+            error: "Extraction failed. No directories found.",
+          });
         }
-        let allDirectories;
-        if (extension === "rar") {
-          try {
-            const extractionResult = await extractArchive(
-              zipFilePath,
-              destinationFolderPath
-            );
 
-            if (!extractionResult.success) {
-              console.error("Extraction failed:", extractionResult.error);
-              return res.status(400).json({ error: "Extraction failed" });
-            }
-            allDirectories = getAllDirectories(destinationFolderPath);
-            const pathDir = `${zipFile[0].filename.replace(
-              `.${extension}`,
-              ""
-            )}/${allDirectories.join("/")}`;
+        const pathDir = `${id}/${allDirectories.join("/")}`;
 
-            await processCSV(filePath, res, req, createdFile, pathDir);
-          } catch (extractionErr) {
-            console.error("Error during extraction:", extractionErr);
-            return res.status(400).json({ error: "Extraction failed" });
-          }
-        } else if (extension === "zip") {
-          const extractStream = unzipper.Parse();
-          extractStream.on("entry", (entry) => {
-            const fileName = entry.path;
-            const destinationPath = path.join(destinationFolderPath, fileName);
-            const parentDir = path.dirname(destinationPath);
-            if (!fs.existsSync(parentDir)) {
-              fs.mkdirSync(parentDir, { recursive: true });
-            }
-            if (fileName.endsWith("/")) {
-              fs.mkdirSync(destinationPath, { recursive: true });
-            } else {
-              entry.pipe(fs.createWriteStream(destinationPath));
-            }
-          });
+        const createdFile = await Files.create({
+          csvFile: csvFileName,
+          zipFile: `${timestamp}_${zipFileName}`,
+          templeteId: id,
+        });
 
-          extractStream.on("error", (err) => {
-            console.error("Error unzipping file:", err);
-            reject(err);
-          });
-
-          extractStream.on("finish", async () => {
-            allDirectories = getAllDirectories(destinationFolderPath);
-            const pathDir = `${zipFile[0].filename.replace(
-              `.${extension}`,
-              ""
-            )}/${allDirectories.join("/")}`;
-
-            await processCSV(filePath, res, req, createdFile, pathDir);
-          });
-
-          fs.createReadStream(zipFilePath).pipe(extractStream);
+        if (fs.existsSync(csvFilePath)) {
+          await processCSV(csvFilePath, res, req, createdFile, pathDir);
+        } else {
+          res
+            .status(404)
+            .json({ error: "CSV file not found after extraction." });
         }
-      });
-    });
-  } catch (error) {
-    console.error("Error handling upload:", error);
-    return res.status(500).send(error);
-  }
+      } else {
+        // Step 9: Respond with the status of the chunk upload
+        res.status(200).json({ message: `Chunk ${chunkIndex} uploaded.` });
+      }
+    } catch (error) {
+      console.error("Error during chunk upload:", error);
+      res.status(500).json({ error: "Chunk upload failed." });
+    }
+  });
 };
 
 module.exports = handleUpload;
