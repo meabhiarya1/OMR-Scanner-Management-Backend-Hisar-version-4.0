@@ -39,6 +39,7 @@ app.use("/images", express.static(imageDirectoryPath));
 app.use("/images", express.static(path.join(__dirname, "extractedFiles")));
 app.use(express.static(builtPath));
 
+
 app.use("/users", userRoutes);
 app.use(upload);
 app.use(compareCsv);

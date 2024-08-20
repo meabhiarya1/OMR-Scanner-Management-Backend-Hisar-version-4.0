@@ -226,8 +226,13 @@ const handleUpload = async (req, res) => {
 
         await extractZipFile(finalFilePath, destinationFolderPath);
 
+        // console.log(finalFilePath, "finalFilePath");
+        // console.log(destinationFolderPath, "destinationFolderPath");
+
         // Step 8: Process the extracted files and CSV
         const allDirectories = getAllDirectories(destinationFolderPath);
+
+        // console.log(allDirectories, "allDirectories");
 
         if (!allDirectories || allDirectories.length === 0) {
           console.error("No directories found after extraction.");
@@ -236,7 +241,11 @@ const handleUpload = async (req, res) => {
           });
         }
 
-        const pathDir = `${id}/${allDirectories.join("/")}`;
+        const pathDir = `${timestamp}_${zipFileName}/${allDirectories.join(
+          "/"
+        )}`;
+
+        // console.log(pathDir, "pathDir");
 
         const createdFile = await Files.create({
           csvFile: csvFileName,
@@ -251,7 +260,8 @@ const handleUpload = async (req, res) => {
             .status(404)
             .json({ error: "CSV file not found after extraction." });
         }
-      } else {
+      } 
+      else {
         // Step 9: Respond with the status of the chunk upload
         res.status(200).json({ message: `Chunk ${chunkIndex} uploaded.` });
       }
